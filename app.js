@@ -70,7 +70,7 @@ We now create a route that allows users to create new Campground entries.
 
 To do this, we use the Schema that we created in models.js. In order to gain access to that schema, we import it by using "require".
 
-As a preliminary exercise, we will create a route that, upon navigation,  creates a predefined "campground" and saves it to our database
+As a preliminary exercise, we will create a route that, upon navigation,  creates a predefined "campground" and saves it to our database.
 */
 
 
@@ -115,3 +115,19 @@ app.get ("/", (req, res) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- CODE TRANSITION: 01a to 01b ---
+
+/*
+To first populate our Campgrounds database, we will introduce some "seed" entries.
+
+We will do this by adding city data from an external source in a new file called "cities.js" and adding some campground descriptors in a new file called "seedHelpers.js". By combining campground descriptions and a city together, we can generate new campgrounds.
+
+These files will go into a "seeds" folder as a means of identifying that that the database entries that we obtain from those files are "different" from user-generated entries. 
+
+We also need to create an "index.js" within that folder in order to be able to send the seed-generated campgrounds into our database. In this "index.js", we will set up our modules as we did with "app.js". In addition, we will also include a function "seedDB" that will be responsible for generating the "seed" campgrounds.
+
+"seedDB" works by creating a loop in which a "descriptor" and a "place" from "seedHelpers.js" is combined with a city from "cities.js"
+
+*Go to cities.js, seedHelpers.js, index.js*
+*/
