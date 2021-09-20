@@ -61,11 +61,26 @@ Now that we have set up all our basic modules, we will now bring the initializat
 
 
 /*
+--- CODE TRANSITION: 00c to 01a ---
+*/
+
+
+/*
+We now create a route that allows users to create new Campground entries.
+
+To do this, we use the Schema that we created in models.js. In order to gain access to that schema, we import it by using "require".
+
+As a preliminary exercise, we will create a route that, upon navigation,  creates a predefined "campground" and saves it to our database
+*/
+
+
+/*
 ***&&& MODULE SETUP &&&***
 */
 const express = require("express");
 const path = require("path")
 const app = express();
+const Campground = require ("./models/models.js") // Imports our "Campground" schema
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
@@ -84,11 +99,15 @@ db.once("open", () => {
     console.log("Database connected");
 });
 
-
-
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
+app.get("/makecampground", async (req, res) => {
+    const camp = new Campground({title: "My Backyard", description: "Cheap camping"})
+    await camp.save()
+    res.send(camp)
+})
+
 app.get ("/", (req, res) => {
     res.render("test")
 })
