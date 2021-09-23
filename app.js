@@ -74,6 +74,37 @@ As a preliminary exercise, we will create a route that, upon navigation,  create
 */
 
 
+
+
+// --- CODE TRANSITION: 01a to 01b ---
+
+/*
+To first populate our Campgrounds database, we will introduce some "seed" entries.
+
+We will do this by adding city data from an external source in a new file called "cities.js" and adding some campground descriptors in a new file called "seedHelpers.js". By combining campground descriptions and a city together, we can generate new campgrounds.
+
+These files will go into a "seeds" folder as a means of identifying that that the database entries that we obtain from those files are "different" from user-generated entries. 
+
+We also need to create an "index.js" within that folder in order to be able to send the seed-generated campgrounds into our database. In this "index.js", we will set up our modules as we did with "app.js". In addition, we will also include a function "seedDB" that will be responsible for generating the "seed" campgrounds.
+
+"seedDB" works by creating a loop in which a "descriptor" and a "place" from "seedHelpers.js" is combined with a city from "cities.js"
+
+*Go to cities.js, seedHelpers.js, index.js*
+*/
+
+// --- CODE TRANSITION: 01c to 02a ---
+
+/*
+We will now work on implementing basic CRUD functionality for our website.
+
+First, we create an index page. That is, a way for a user to navigate to a webpage containing all the campground entries in our database. This involves the creation of an Express route and a webpage (with EJS functionality). 
+
+I will place the EJS template in views/campgrounds and call it "index.ejs"
+
+*Go to index.ejs*
+*/
+
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -102,10 +133,10 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
-app.get("/makecampground", async (req, res) => {
-    const camp = new Campground({title: "My Backyard", description: "Cheap camping"})
-    await camp.save()
-    res.send(camp)
+
+app.get("/campgrounds", async (req, res) => {
+    const campgroundIndex = await Campground.find({})
+    res.render("campgrounds/index", {campgroundIndex})
 })
 
 app.get ("/", (req, res) => {
@@ -115,19 +146,3 @@ app.get ("/", (req, res) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
-
-// --- CODE TRANSITION: 01a to 01b ---
-
-/*
-To first populate our Campgrounds database, we will introduce some "seed" entries.
-
-We will do this by adding city data from an external source in a new file called "cities.js" and adding some campground descriptors in a new file called "seedHelpers.js". By combining campground descriptions and a city together, we can generate new campgrounds.
-
-These files will go into a "seeds" folder as a means of identifying that that the database entries that we obtain from those files are "different" from user-generated entries. 
-
-We also need to create an "index.js" within that folder in order to be able to send the seed-generated campgrounds into our database. In this "index.js", we will set up our modules as we did with "app.js". In addition, we will also include a function "seedDB" that will be responsible for generating the "seed" campgrounds.
-
-"seedDB" works by creating a loop in which a "descriptor" and a "place" from "seedHelpers.js" is combined with a city from "cities.js"
-
-*Go to cities.js, seedHelpers.js, index.js*
-*/
