@@ -105,6 +105,21 @@ I will place the EJS template in views/campgrounds and call it "index.ejs"
 */
 
 
+
+// --- CODE TRANSITION: 01c to 02a ---
+
+/*
+Now that we have created our Campground index, we will now proceed to create our "Show Details" route and associated webpage.
+
+To do this, we will use "req.param" to "res.render" unique routes for each campground in our database.
+
+We will also have to create a template HTML page that will provide the formatting for all of the information of each campground. I will call this "show.ejs". 
+
+We can also modify our index page so that each campground is a hyperlink to its associated "show details" page.
+
+*Go to index.ejs and show.ejs*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -133,6 +148,12 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
+
+app.get("/campgrounds/:id", async (req, res) => {
+    const identifiedCamp = await Campground.findById(req.params.id) // You have to use "findById". You can't use "find({id:...})" because if you wanted to use "find", the equivalent term would be find({_id: ObjectId("ID String")}). This is not really parsable from req.params.
+    console.log(req.params.id) // req.params.id is a string
+    res.render("campgrounds/show", {identifiedCamp})
+})
 
 app.get("/campgrounds", async (req, res) => {
     const campgroundIndex = await Campground.find({})

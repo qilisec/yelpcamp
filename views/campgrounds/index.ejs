@@ -12,7 +12,7 @@
     <h1>Campground List:</h1>
     <ul>
         <% for (let campground of campgroundIndex) { %>
-            <li> <%=campground.title%> </li>
+            <li> <a href="campgrounds/<%=campground._id%>"><%=campground.title%></a> </li>
         <% } %>
     </ul>
 </body>
