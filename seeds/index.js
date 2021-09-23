@@ -31,6 +31,7 @@ const seedDB = async () => {
             await campCityState.save()
         }
         // await campCityState.save() // Careless Mistake: this line needs to be in the loop because the constant "campCityState" is scoped to the loop only.
+        // await campCityState.save() // Careless Mistake: this line needs to be in the loop because the constant "campCityState" is scoped to the loop only.
     }
 
 
