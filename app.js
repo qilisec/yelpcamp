@@ -133,16 +133,50 @@ We will also need a webpage to contain the form. I will call it "new.ejs" Also, 
 *Go to index.ejs, show.ejs, and new.ejs*
 */
 
+
+/*
+app.post("/campgrounds", async (req, res) => {
+    res.send(req.body);
+})
+// Using only this code for our POST route, we will receive an empty page upon submitting the new campground form. This is because req.body is in a format that is not "renderable" as-is. We need to first declare a parsing "framework" to have Express parse the information contained in req.body into a "readable" form. This is done through the code "app.use(express.urlencoded({extended:true}))"
+
+We can now proceed.
+*/
+
+
+// --- CODE TRANSITION: 02c to 02d ---
+
+/*
+Now that we have our route to create new campgrounds, we will create the route to delete campgrounds. We will also add a button on a given campground's details page which will delete the route.
+
+Unlike with the first lesson on creating CRUD functionality, there are some additional considerations that we will need to make in our Yelp Camp project. This can be especially observed in this "Delete" route.
+
+For example, we probably do not want any and everybody to be able to delete a campground entry so we will also need to consider how to incorporate aspects of authorization into our delete route as well. In addition, "deletion" of a campground is not just able deleting "information" about a campgrounds "name" and "location". In the final product, we will also provide functionality to rate campgrounds as well as display images. When a campground is deleted, we will also like to delete its associated scores and pictures as well.
+
+However, for now we will just set up the basic delete route. This will involve the use of a DELETE method. which will be sent upon clicking a button that submits a form. However, forms can natively only send GET and post requests. In order to have the form send a DELETE request, we will need to install and employ a package called "Method-Override" which will "hi-jack" the form upon submission and change its method. Thus, we will need to install and set up "Method-Override".
+
+Installation is performed using "npm i method-override"
+To "enable" Method-Override, we use "const methodOverride = require ("method-override")" and "app.use(methodOverride("_method"))".
+
+
+*Go to show.ejs*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
 const express = require("express");
 const path = require("path")
 const app = express();
-const Campground = require ("./models/models.js") // Imports our "Campground" schema
+const Campground = require("./models/models.js") // Imports our "Campground" schema
+const methodOverride = require("method-override") // No difference between "require(...)" and "require (...)"
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
+
+app.use(express.urlencoded({extended:true}))
+app.use(methodOverride("_method")) 
+// We declare "_method" as the "identifier" that Method-Override looks for. By appending "_method" to a "request-creating" source (e.g. a form), Method-Override recognizes that it should intercept the created request and change its method to one of our choosing (which we designate through a query string appended to "method")
 
 const mongoose = require("mongoose")
 
@@ -162,42 +196,46 @@ db.once("open", () => {
 ***&&& EXPRESS ROUTES &&&***
 */
 
+app.delete("/campgrounds/:id", async (req, res) => {
+    // const {id} = req.params
+    const identifiedCamp = await Campground.findByIdAndDelete(req.params.id)
+    // const identifiedCamp = await Campground.findByIdAndDelete(id)
+    // No difference between the two above ways of deleting campgrounds.
+    // console.log(id)
+    res.redirect("/campgrounds") 
+    // Careless Mistake: "res.redirect("/campgrounds"), not "res.redirect(campgrounds). This caused a "CastError".
+})
 
 app.get("/campgrounds/new", (req, res) => {
+    console.log("New Campground")
     res.render("campgrounds/new")
 })
 
-/*
-app.post("/campgrounds", async (req, res) => {
-    res.send(req.body);
-})
-// Using only this code for our POST route, we will receive an empty page upon submitting the new campground form. This is because req.body is in a format that is not "renderable" as-is. We need to first declare a parsing "framework" to have Express parse the information contained in req.body into a "readable" form. This is done through the code "app.use(express.urlencoded({extended:true}))"
-
-We can now proceed.
-*/
-
-app.use(express.urlencoded({extended:true}))
-
 app.post("/campgrounds", async (req, res) => {
     // console.log(req.body)
-    const newCamp = newCampground(req.body.campground);
+    const newCamp = new Campground(req.body.campground);
     // console.log(newCamp)
     await newCamp.save()
-    res.redirect("campgrounds")
+    res.redirect("/campgrounds")
 })
 
 app.get("/campgrounds/:id", async (req, res) => {
     const identifiedCamp = await Campground.findById(req.params.id) // You have to use "findById". You can't use "find({id:...})" because if you wanted to use "find", the equivalent term would be find({_id: ObjectId("ID String")}). This is not really parsable from req.params.
-    console.log(req.params.id) // req.params.id is a string
+    // console.log(req.params.id) // req.params.id is a string
+    console.log("Show Details")
+    console.log(req.params)
     res.render("campgrounds/show", {identifiedCamp})
 })
 
 app.get("/campgrounds", async (req, res) => {
+    console.log("Index")
     const campgroundIndex = await Campground.find({})
     res.render("campgrounds/index", {campgroundIndex})
 })
+// For some reason, if I start on "/campgrounds/" and not "/campgrounds", when I click a campground, I get directed to "/campgrounds/campgrounds/..id"
 
 app.get ("/", (req, res) => {
+    console.log("test")
     res.render("test")
 })
 

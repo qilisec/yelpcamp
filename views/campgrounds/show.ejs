@@ -12,9 +12,19 @@
     <h1><%=identifiedCamp.title%>:</h1>
     <ul>
         <li>
+            ID: <%= identifiedCamp._id %>
+        </li>
+        <li>
             Location: <%= identifiedCamp.location %>
         </li>
     </ul>
+    <br>
+    <form action="/campgrounds/<%=identifiedCamp._id%>?_method=delete" method=POST> 
+        <!-- Careless Mistake: "<form action="....?_method=delete"", not "<form action="...."?_method=delete".
+            Careless Mistake: "<form action="....?_method=delete"", not "<form action="...._method?=delete""
+            Note: No difference between "method=POST" and "method="POST"" -->
+        <button>Delete this Campground</button>
+    </form>
     <br>
     <a href="/campgrounds">Return to Campground Index</a>
 </body>
