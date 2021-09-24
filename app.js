@@ -106,7 +106,7 @@ I will place the EJS template in views/campgrounds and call it "index.ejs"
 
 
 
-// --- CODE TRANSITION: 01c to 02a ---
+// --- CODE TRANSITION: 02a to 02b ---
 
 /*
 Now that we have created our Campground index, we will now proceed to create our "Show Details" route and associated webpage.
@@ -118,6 +118,19 @@ We will also have to create a template HTML page that will provide the formattin
 We can also modify our index page so that each campground is a hyperlink to its associated "show details" page.
 
 *Go to index.ejs and show.ejs*
+*/
+
+
+// --- CODE TRANSITION: 02b to 02c ---
+
+/*
+We will now add a page to create new Campground entries.
+
+We will need two routes. One route to send the user to a page where they can submit a form with the new campground details and another route where that form can be sent so that Mongoose can pass the information to MongoDB to store it in the database. The former will be a GET route like the others but the latter will be a POST route.
+
+We will also need a webpage to contain the form. I will call it "new.ejs" Also, I will add a link to the "Create New Campground" page on the index page and a link in "show.ejs" to return to the Campground index.
+
+*Go to index.ejs, show.ejs, and new.ejs*
 */
 
 /*
@@ -148,6 +161,30 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
+
+
+app.get("/campgrounds/new", (req, res) => {
+    res.render("campgrounds/new")
+})
+
+/*
+app.post("/campgrounds", async (req, res) => {
+    res.send(req.body);
+})
+// Using only this code for our POST route, we will receive an empty page upon submitting the new campground form. This is because req.body is in a format that is not "renderable" as-is. We need to first declare a parsing "framework" to have Express parse the information contained in req.body into a "readable" form. This is done through the code "app.use(express.urlencoded({extended:true}))"
+
+We can now proceed.
+*/
+
+app.use(express.urlencoded({extended:true}))
+
+app.post("/campgrounds", async (req, res) => {
+    // console.log(req.body)
+    const newCamp = newCampground(req.body.campground);
+    // console.log(newCamp)
+    await newCamp.save()
+    res.redirect("campgrounds")
+})
 
 app.get("/campgrounds/:id", async (req, res) => {
     const identifiedCamp = await Campground.findById(req.params.id) // You have to use "findById". You can't use "find({id:...})" because if you wanted to use "find", the equivalent term would be find({_id: ObjectId("ID String")}). This is not really parsable from req.params.
