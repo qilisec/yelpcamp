@@ -162,13 +162,25 @@ To "enable" Method-Override, we use "const methodOverride = require ("method-ove
 *Go to show.ejs*
 */
 
+// --- CODE TRANSITION: 02d to 02e ---
+
+/*
+Lastly, we create "edit" routes for our campsites. This involves making two routes. One route that directs users to a campground-specific page where they can make their edits to the campground details (i.e. in a form) and another route that submits the form as a PUT request which then updates the associated document in our MongoDB database.
+
+We also need to create a template for the campground edit page in which the campground details are pre-populated. Lastly, we need to create buttons on a campground's details page that will direct the user to the campground's "edit" page. This will be found in views/campgrounds/edit.ejs
+
+As with the DELETE route, we need to use "Method Override" in order to convert the form submission's method from POST to Put, which is the method we will use to set up the route responsible for actually sending the changed details to our database.
+
+*Go to show.ejs and edit.ejs*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
 const express = require("express");
 const path = require("path")
 const app = express();
-const Campground = require("./models/models.js") // Imports our "Campground" schema
+const Campground = require("./models/models.js")
 const methodOverride = require("method-override") // No difference between "require(...)" and "require (...)"
 
 app.set("view engine", "ejs")
@@ -176,7 +188,6 @@ app.set("views", path.join(__dirname, "views"))
 
 app.use(express.urlencoded({extended:true}))
 app.use(methodOverride("_method")) 
-// We declare "_method" as the "identifier" that Method-Override looks for. By appending "_method" to a "request-creating" source (e.g. a form), Method-Override recognizes that it should intercept the created request and change its method to one of our choosing (which we designate through a query string appended to "method")
 
 const mongoose = require("mongoose")
 
@@ -186,7 +197,7 @@ mongoose.connect("mongodb://localhost:27017/yelp-camp", {
     useUnifiedTopology: true
 })
 
-const db = mongoose.connection; // Unnecessary; just for speed
+const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
     console.log("Database connected");
@@ -195,13 +206,23 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
+app.get("/campgrounds/:id/edit", async (req, res) => {
+    const identifiedCamp = await Campground.findById(req.params.id)
+    res.render("campgrounds/edit", {identifiedCamp})
+})
+
+app.put("/campgrounds/:id", async (req, res) => {
+    const {id} = await req.params
+    const updateCamp = await Campground.findByIdAndUpdate(id, {title: req.body.campground.title, location: req.body.campground.location}, {new: true})
+    // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
+    console.log(id)
+    console.log(updateCamp)
+    await updateCamp.save()
+    res.redirect("/campgrounds")
+})
 
 app.delete("/campgrounds/:id", async (req, res) => {
-    // const {id} = req.params
     const identifiedCamp = await Campground.findByIdAndDelete(req.params.id)
-    // const identifiedCamp = await Campground.findByIdAndDelete(id)
-    // No difference between the two above ways of deleting campgrounds.
-    // console.log(id)
     res.redirect("/campgrounds") 
     // Careless Mistake: "res.redirect("/campgrounds"), not "res.redirect(campgrounds). This caused a "CastError".
 })
@@ -212,15 +233,13 @@ app.get("/campgrounds/new", (req, res) => {
 })
 
 app.post("/campgrounds", async (req, res) => {
-    // console.log(req.body)
     const newCamp = new Campground(req.body.campground);
-    // console.log(newCamp)
     await newCamp.save()
     res.redirect("/campgrounds")
 })
 
 app.get("/campgrounds/:id", async (req, res) => {
-    const identifiedCamp = await Campground.findById(req.params.id) // You have to use "findById". You can't use "find({id:...})" because if you wanted to use "find", the equivalent term would be find({_id: ObjectId("ID String")}). This is not really parsable from req.params.
+    const identifiedCamp = await Campground.findById(req.params.id)
     // console.log(req.params.id) // req.params.id is a string
     console.log("Show Details")
     console.log(req.params)

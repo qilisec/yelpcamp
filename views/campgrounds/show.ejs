@@ -19,6 +19,8 @@
         </li>
     </ul>
     <br>
+    <a href="/campgrounds/<%=identifiedCamp._id%>/edit">Edit This Campground</a>
+    <br>
     <form action="/campgrounds/<%=identifiedCamp._id%>?_method=delete" method=POST> 
         <!-- Careless Mistake: "<form action="....?_method=delete"", not "<form action="...."?_method=delete".
             Careless Mistake: "<form action="....?_method=delete"", not "<form action="...._method?=delete""
