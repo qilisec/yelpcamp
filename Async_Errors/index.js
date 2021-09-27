@@ -4,6 +4,8 @@ Handling errors generated from asynchronous functions is more complicated than s
 We first create our custom "error class" in "AppError.js" and then "require" it. We will also import our custom "error handler"
 */
 
+// --- CODE TRANSITION: 04c to 04d ---
+
 // ***&&& MODULE SETUP &&&***
 
 const express = require('express');
@@ -11,7 +13,7 @@ const app = express();
 const path = require('path');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override')
-const AppError = require('./AppError'); // This is our custom error class
+const AppError = require('./AppError');
 
 
 const Product = require('./models/product');
@@ -61,16 +63,52 @@ app.post('/products', async (req, res, next) => {
 })
 
 
+/*
+&&&&&&&&& 
+If we navigate to the "details" page of a product that doesn't exist (i.e. the wrong ID is inputted), we receive an error. Normally, we can attempt to "catch" that error with our custom error class and handler, as in:
+&&&&&&&&& 
+*/
+
+// app.get('/products/:id', async (req, res, next) => {
+//     const { id } = req.params;
+//     const product = await Product.findById(id)
+//     if (!product) { // Code added to "catch" the error
+//         throw new AppError("Product Not Found", 404)
+//     }
+//     res.render('products/show', { product })
+// })
+
+/*
+&&&&&&&&& 
+However, in this case, the error is not successfully caught (i.e. We do not see the page denoted by our error handler). This is because, for async functions, in order to "activate" our error handler, all errors must be passed to a "next" function.
+
+As with "app.use", "app.get" methods can also have a "next" function as a parameter. As with "app.use", when "next()"  is invoked in a "app.get" route, the "next" call back is executed. However, if next() is invoked with an argument, Express determines that the "next" function will be the error handler.
+&&&&&&&&& 
+*/
+
 app.get('/products/:id', async (req, res, next) => {
     const { id } = req.params;
     const product = await Product.findById(id)
+    if (!product) {
+        return next(new AppError("Product Not Found", 404));
+        }
+        // For some reason, the incorrect "id" has to be the same character length as a "correct" id. Otherwise, the website continues to "spin" out.
     res.render('products/show', { product })
+    // If we do not include "return" in the "next" statement, then EJS will still attempt to "res.render" "products/show" based on our erroneous ID, which will not work. 
 })
 
+/*
+&&&&&&&&& 
+We can handle an error with editing a product in the same manner.
+&&&&&&&&& 
+*/
 
 app.get('/products/:id/edit', async (req, res, next) => {
     const { id } = req.params;
     const product = await Product.findById(id);
+    if (!product) {
+        return next(new AppError("Product Not Found", 404));
+        }
     res.render('products/edit', { product, categories })
 })
 
