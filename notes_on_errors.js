@@ -115,3 +115,11 @@ app.use((err, req, res, next) => {
 app.listen(3001, () => {
     console.log('App is running on localhost:3001')
 })
+
+// --- CODE TRANSITION: 04b to 04c ---
+
+/*
+To follow the next lesson, we will need some pre-built materials. We will find them in the "Async_Errors" directory
+
+*Go to /Async_Errors/, run "node seeds.js", go to index.js*
+*/
