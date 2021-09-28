@@ -6,6 +6,12 @@ We first create our custom "error class" in "AppError.js" and then "require" it.
 
 // --- CODE TRANSITION: 04c to 04d ---
 
+// --- CODE TRANSITION: 04d to 04e ---
+
+/*
+If we are using async functions, we can also use the standard way of handling errors: "try" and "catch."
+*/
+
 // ***&&& MODULE SETUP &&&***
 
 const express = require('express');
@@ -40,13 +46,17 @@ const categories = ['fruit', 'vegetable', 'dairy'];
 // ***&&& EXPRESS ROUTES &&&***
 
 app.get('/products', async (req, res, next) => {
-    const { category } = req.query;
-    if (category) {
-        const products = await Product.find({ category })
-        res.render('products/index', { products, category })
-    } else {
-        const products = await Product.find({})
-        res.render('products/index', { products, category: 'All' })
+    try { // If Mongoose generates an error on this route (e.g. a product is created without a name, we will catch the error.)
+        const { category } = req.query;
+        if (category) {
+            const products = await Product.find({ category })
+            res.render('products/index', { products, category })
+        } else {
+            const products = await Product.find({})
+            res.render('products/index', { products, category: 'All' })
+        }
+    } catch(e) { // This sends the error to our custom error handler.
+    next(e)
     }
 })
 
@@ -57,66 +67,53 @@ app.get('/products/new', (req, res) => {
 
 
 app.post('/products', async (req, res, next) => {
+    try {
     const newProduct = new Product(req.body);
     await newProduct.save();
     res.redirect(`/products/${newProduct._id}`)
+    } catch(e) {
+    next(e) 
+    }
 })
 
-
-/*
-&&&&&&&&& 
-If we navigate to the "details" page of a product that doesn't exist (i.e. the wrong ID is inputted), we receive an error. Normally, we can attempt to "catch" that error with our custom error class and handler, as in:
-&&&&&&&&& 
-*/
-
-// app.get('/products/:id', async (req, res, next) => {
-//     const { id } = req.params;
-//     const product = await Product.findById(id)
-//     if (!product) { // Code added to "catch" the error
-//         throw new AppError("Product Not Found", 404)
-//     }
-//     res.render('products/show', { product })
-// })
-
-/*
-&&&&&&&&& 
-However, in this case, the error is not successfully caught (i.e. We do not see the page denoted by our error handler). This is because, for async functions, in order to "activate" our error handler, all errors must be passed to a "next" function.
-
-As with "app.use", "app.get" methods can also have a "next" function as a parameter. As with "app.use", when "next()"  is invoked in a "app.get" route, the "next" call back is executed. However, if next() is invoked with an argument, Express determines that the "next" function will be the error handler.
-&&&&&&&&& 
-*/
-
 app.get('/products/:id', async (req, res, next) => {
+    try {
+    // This "try-catch" handles errors generated when Mongoose "malfunctions" whereas in interior "AppError" handles errors generated when Mongoose is functioning "correctly" 
     const { id } = req.params;
     const product = await Product.findById(id)
     if (!product) {
-        return next(new AppError("Product Not Found", 404));
-        }
-        // For some reason, the incorrect "id" has to be the same character length as a "correct" id. Otherwise, the website continues to "spin" out.
+        // return next(new AppError("Product Not Found", 404));
+         throw new AppError("Product Not Found", 404);
+         // Since we have a "try-catch" setup for this route, we are able to "throw" errors instead of passing them to "next" the way we had to in previous circumstances. That is, because we have a "catch" set up, its all right to "throw" errors.
+    }
     res.render('products/show', { product })
-    // If we do not include "return" in the "next" statement, then EJS will still attempt to "res.render" "products/show" based on our erroneous ID, which will not work. 
+    } catch(e) {
+        next(e)
+    }
 })
 
-/*
-&&&&&&&&& 
-We can handle an error with editing a product in the same manner.
-&&&&&&&&& 
-*/
-
 app.get('/products/:id/edit', async (req, res, next) => {
+    try {
     const { id } = req.params;
     const product = await Product.findById(id);
     if (!product) {
-        return next(new AppError("Product Not Found", 404));
+        throw new AppError("Product Not Found", 404);
         }
     res.render('products/edit', { product, categories })
+    } catch(e) {
+        next(e)
+    }
 })
 
 
 app.put('/products/:id', async (req, res, next) => {
+    try {
     const { id } = req.params;
     const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
     res.redirect(`/products/${product._id}`);
+    } catch(e) {
+        next(e)
+    }
 })
 
 
@@ -125,13 +122,6 @@ app.delete('/products/:id', async (req, res) => {
     const deletedProduct = await Product.findByIdAndDelete(id);
     res.redirect('/products');
 });
-
-
-/* 
-&&&&&&&&& 
-NOTE: This is the custom error handler that we created.
-&&&&&&&&&
-*/
 
 app.use((err, req, res, next) => {
     const { status = 500, message = 'Something went wrong' } = err;
@@ -142,5 +132,3 @@ app.use((err, req, res, next) => {
 app.listen(3002, () => {
     console.log("APP IS LISTENING ON PORT 3002!")
 })
-
-
