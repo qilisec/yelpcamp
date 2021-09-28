@@ -12,6 +12,27 @@ We first create our custom "error class" in "AppError.js" and then "require" it.
 If we are using async functions, we can also use the standard way of handling errors: "try" and "catch."
 */
 
+// --- CODE TRANSITION: 04e to 04f ---
+
+/*
+Since we will be using many async functions when creating routes in Express, it will be very tedious to set up "try-catch" error handling for each route. In order to cut down on the tedium, we can create a function that we can pass our anonymous "async (req, res)" functions into which will wrap those "async (req, res)" functions with a "try-catch".
+
+If the asynchronous function generates an error, the error is "passed" up to the "parent" function and since the "parent" function sets up a "try-catch", the error will thus be caught.
+
+We will call this "parent" function "wrapAsync" and it is defined as:
+*/
+
+function wrapAsync(fn) {
+    return function (req, res, next) {
+        fn(req, res, next).catch(e => next(e))
+        // I think this function uses ".catch" because it's not in "async-await" syntax but rather just dealing with "promises"
+    }
+}
+
+/*
+Now that we have defined this function "wrapAsync", we "enclose" every "async (req, res, next)" function in our routes with "wrapAsync" and remove the existing "try-catch" setups
+*/
+
 // ***&&& MODULE SETUP &&&***
 
 const express = require('express');
@@ -45,8 +66,7 @@ const categories = ['fruit', 'vegetable', 'dairy'];
 
 // ***&&& EXPRESS ROUTES &&&***
 
-app.get('/products', async (req, res, next) => {
-    try { // If Mongoose generates an error on this route (e.g. a product is created without a name, we will catch the error.)
+app.get('/products', wrapAsync(async (req, res, next) => {
         const { category } = req.query;
         if (category) {
             const products = await Product.find({ category })
@@ -55,10 +75,7 @@ app.get('/products', async (req, res, next) => {
             const products = await Product.find({})
             res.render('products/index', { products, category: 'All' })
         }
-    } catch(e) { // This sends the error to our custom error handler.
-    next(e)
-    }
-})
+}))
 
 
 app.get('/products/new', (req, res) => {
@@ -66,62 +83,43 @@ app.get('/products/new', (req, res) => {
 })
 
 
-app.post('/products', async (req, res, next) => {
-    try {
+app.post('/products', wrapAsync(async (req, res, next) => {
     const newProduct = new Product(req.body);
     await newProduct.save();
     res.redirect(`/products/${newProduct._id}`)
-    } catch(e) {
-    next(e) 
-    }
-})
+}))
 
-app.get('/products/:id', async (req, res, next) => {
-    try {
-    // This "try-catch" handles errors generated when Mongoose "malfunctions" whereas in interior "AppError" handles errors generated when Mongoose is functioning "correctly" 
+app.get('/products/:id', wrapAsync(async (req, res, next) => {
     const { id } = req.params;
     const product = await Product.findById(id)
     if (!product) {
-        // return next(new AppError("Product Not Found", 404));
-         throw new AppError("Product Not Found", 404);
-         // Since we have a "try-catch" setup for this route, we are able to "throw" errors instead of passing them to "next" the way we had to in previous circumstances. That is, because we have a "catch" set up, its all right to "throw" errors.
+        throw new AppError("Product Not Found", 404);
     }
     res.render('products/show', { product })
-    } catch(e) {
-        next(e)
-    }
-})
+}))
 
-app.get('/products/:id/edit', async (req, res, next) => {
-    try {
+app.get('/products/:id/edit', wrapAsync(async (req, res, next) => {
     const { id } = req.params;
     const product = await Product.findById(id);
     if (!product) {
         throw new AppError("Product Not Found", 404);
         }
     res.render('products/edit', { product, categories })
-    } catch(e) {
-        next(e)
-    }
-})
+}))
 
 
-app.put('/products/:id', async (req, res, next) => {
-    try {
+app.put('/products/:id', wrapAsync(async (req, res, next) => {
     const { id } = req.params;
     const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
     res.redirect(`/products/${product._id}`);
-    } catch(e) {
-        next(e)
-    }
-})
+}))
 
 
-app.delete('/products/:id', async (req, res) => {
+app.delete('/products/:id', wrapAsync(async (req, res) => {
     const { id } = req.params;
     const deletedProduct = await Product.findByIdAndDelete(id);
     res.redirect('/products');
-});
+}));
 
 app.use((err, req, res, next) => {
     const { status = 500, message = 'Something went wrong' } = err;
