@@ -261,3 +261,21 @@ app.get ("/", (req, res) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- CODE TRANSITION: 02 to 03 ---
+
+/*
+Now that we have set up our basic CRUD routes, we will learn how to handle errors in Express. To do this, I will create a separate JS file where I will record my notes on the lesson. This file will be "notes_on_errors.js"
+
+*Go to notes_on_errors.js*
+*/
+
+// --- Code Transition: 04 to 04.5 ---
+
+/*
+Now that we have finished learning about Express Error Handling, we now want to incorporate some user-visible input validation (i.e. client-side validation). This includes features such as the user being alerted as to when they have not filled out a required entry on a form and having the website prevent users from actually submitting forms where information is missing. 
+
+To do this, we will be using Bootstrap, which is a CSS "tool". However, this means I need to learn CSS. Therefore, I will have to go back and learn about CSS from pretty much near the beginning.
+
+As such, I will put this Yelp-Camp project "on-hold" until I have the necessary knowledge to continue.
+*/

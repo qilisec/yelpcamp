@@ -22,15 +22,22 @@ If the asynchronous function generates an error, the error is "passed" up to the
 We will call this "parent" function "wrapAsync" and it is defined as:
 */
 
-function wrapAsync(fn) {
-    return function (req, res, next) {
-        fn(req, res, next).catch(e => next(e))
-        // I think this function uses ".catch" because it's not in "async-await" syntax but rather just dealing with "promises"
-    }
-}
+// function wrapAsync(fn) {
+//     return function (req, res, next) {
+//         fn(req, res, next).catch(e => next(e))
+//         // I think this function uses ".catch" because it's not in "async-await" syntax but rather just dealing with "promises"
+//     }
+// }
 
 /*
 Now that we have defined this function "wrapAsync", we "enclose" every "async (req, res, next)" function in our routes with "wrapAsync" and remove the existing "try-catch" setups
+*/
+
+
+// --- CODE TRANSITION: 04f to 04g ---
+
+/*
+Mongoose has many errors. One way in which Mongoose labels its errors are through the "names" that it assigns its errors. These names can be "acquired" using Express middleware.
 */
 
 // ***&&& MODULE SETUP &&&***
@@ -63,6 +70,12 @@ app.use(methodOverride('_method'))
 
 const categories = ['fruit', 'vegetable', 'dairy'];
 
+function wrapAsync(fn) {
+    return function (req, res, next) {
+        fn(req, res, next).catch(e => next(e))
+        // I think this function uses ".catch" because it's not in "async-await" syntax but rather just dealing with "promises"
+    }
+}
 
 // ***&&& EXPRESS ROUTES &&&***
 
@@ -121,6 +134,31 @@ app.delete('/products/:id', wrapAsync(async (req, res) => {
     res.redirect('/products');
 }));
 
+// app.use((err, req, res, next) => {
+//     console.log(err.name); // This middleware "announces" the name of the "error"
+//     next(err) // After "announcing" the error name, this middleware then passes the error off to our actual custom error handler.
+// })
+
+/* 
+&&&&&&&&&&&&&&&&&&&&&&&&&
+The above middleware shows us that when we try to create a new product without providing a product "name" or "quantity", Mongoose generates a "ValidationError". This is because we have "required" that all new products must have those properties filled out. 
+
+We can create custom behavior based on error names.
+&&&&&&&&&&&&&&&&&&&&&&&&&
+*/
+
+const handleValidationErr = err => {
+    console.log(err);
+    return err;
+}
+
+app.use((err, req, res, next) => {
+    console.log(err.name);
+    if (err.name === "ValidationError") err = handleValidationErr(err)
+    next(err)
+})
+
+
 app.use((err, req, res, next) => {
     const { status = 500, message = 'Something went wrong' } = err;
     res.status(status).send(message);
@@ -130,3 +168,11 @@ app.use((err, req, res, next) => {
 app.listen(3002, () => {
     console.log("APP IS LISTENING ON PORT 3002!")
 })
+
+// --- Code Transition: 04 to 04.5 ---
+
+/*
+This concludes the section on Error Handling in Express. We will return to our work on the Yelp-Camp application.
+
+*Go to ../app.js*
+*/
