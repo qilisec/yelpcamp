@@ -1,18 +1,29 @@
 <!-- This wil serve as the starting ground for all our webpages. We will populate it with elements that we want included with every webpage in our app (i.e. elements that stay the same). The "content" supplied to this boilerplate page will be determined by the appropriate EJS template that is associated with a given route. In order to "connect" this boilerplate layout to each specific page, we have to use EJS to reference the appropriate layout on each page.
 
-To see this in action, we will first modify our index template. We use the "<%- body %>" tag indicates to EJS-Mate where the "content" (i.e. the "non-boilerplate" material) of the website should be placed.
+To see this in action, we will first modify our index template. We use the // "%- body %" tag indicates to EJS-Mate where the "content" (i.e. the "non-boilerplate" material) of the website should be placed.
 
 *Go to ../campgrounds/index.ejs*-->
 
+<!-- We will now set up our boilerplate layout to initialize Bootstrap. This involves adding the link to the CDN and to the JS scripts that Bootstrap needs to enable its full functionality. We will also "enclose" our "body" in a "main" tag which will serve as the element that we designate as the "container" for our content.-->
+
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boilerplate</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
 </head>
+
 <body>
-    <%- body %> 
+    <main class="container">
+    <%- body %>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
 </body>
+
 </html>

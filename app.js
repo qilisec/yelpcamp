@@ -280,3 +280,11 @@ app.get ("/", (req, res) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- CODE TRANSITION: 03a to 03b ---
+
+/*
+Now that we have set up "EJS-Mate," we are ready to begin including CSS into our webpages. We will do this via Bootstrap. Thus, we will need to set up our webpages to "pull" the resources and scripts that Bootstrap needs upon navigation. We can do this easily by incorporating that code within our "boilerplate" layout.
+
+*Go to boilerplate.ejs*
+*/
