@@ -1,0 +1,18 @@
+<!-- This wil serve as the starting ground for all our webpages. We will populate it with elements that we want included with every webpage in our app (i.e. elements that stay the same). The "content" supplied to this boilerplate page will be determined by the appropriate EJS template that is associated with a given route. In order to "connect" this boilerplate layout to each specific page, we have to use EJS to reference the appropriate layout on each page.
+
+To see this in action, we will first modify our index template. We use the "<%- body %>" tag indicates to EJS-Mate where the "content" (i.e. the "non-boilerplate" material) of the website should be placed.
+
+*Go to ../campgrounds/index.ejs*-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boilerplate</title>
+</head>
+<body>
+    <%- body %> 
+</body>
+</html>

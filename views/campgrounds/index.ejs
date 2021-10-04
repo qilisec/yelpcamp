@@ -1,14 +1,11 @@
 <!-- We will create an unordered list and use EJS to generate a "for" loop. By  iterating through all of the campgrounds in our database, we will be able to display every campground in our database on this page. -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campgrounds</title>
-</head>
-<body>
+
+<!-- We will now prepare the index EJS page so that its "boilerplate" is supplied by "boilerplate.ejs" instead of within the "index.ejs" file itself. This will involve setting up "index.ejs" so that it knows where to acquire its "layout" from as well as removing everything from the "index.ejs" template that is now being accounted for by the boilerplate layout-->
+
+<!-- We can do the same for each of the other templates. After we have tested that each template works correctly with the "boilerplate" layout, we can remove the "before-after" text in our layout.-->
+
+<% layout("layouts/boilerplate_start") %>
     <h1>Campground List:</h1>
     <ul>
         <% for (let campground of campgroundIndex) { %>
@@ -17,6 +14,4 @@
     </ul>
     <br>
     <a href="campgrounds/new">Create a new campground</a>
-</body>
-</html>
 

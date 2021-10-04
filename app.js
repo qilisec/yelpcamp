@@ -174,18 +174,37 @@ As with the DELETE route, we need to use "Method Override" in order to convert t
 *Go to show.ejs and edit.ejs*
 */
 
+
+// --- CODE TRANSITION: 02 to 03 ---
+
+/*
+We will now start working on the appearance of the site. That is, we will begin working on the styling. To do this, we will be using Bootstrap
+
+Before that, we will set up our ejs templates so that we can more easily export our styling to every page. To facilitate this setup, we will download "EJS-mate" which improves on the ease-of-use of partials by consolidating those partials into a single "boilerplate" file that can serve as the starting point of every one of our "EJS pages". This way, we do not need to add multiple partial templates to each page. Rather, the "partial" that is included in each template page will actually be the body of the text.
+
+We install "EJS-mate" using "npm i ejs-mate"
+
+We then "initialize" the module by first "requiring" it and then setting "app.engine" to use "ejs-mate".
+
+Afterwards, we create a "layouts" directory in our "views" directory. This is where we place the file that will serve as our "boilerplate"
+
+*Go to ./views/layouts/boilerplate.ejs*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
 const express = require("express");
 const path = require("path")
 const app = express();
+const ejsMate = require("ejs-mate") // Requiring "EJS-mate"
 const Campground = require("./models/models.js")
-const methodOverride = require("method-override") // No difference between "require(...)" and "require (...)"
+const methodOverride = require("method-override")
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
+app.engine("ejs", ejsMate) // Setting "ejs-mate" to be the "engine"
 app.use(express.urlencoded({extended:true}))
 app.use(methodOverride("_method")) 
 
