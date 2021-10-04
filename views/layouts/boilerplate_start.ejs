@@ -6,6 +6,11 @@ To see this in action, we will first modify our index template. We use the // "%
 
 <!-- We will now set up our boilerplate layout to initialize Bootstrap. This involves adding the link to the CDN and to the JS scripts that Bootstrap needs to enable its full functionality. We will also "enclose" our "body" in a "main" tag which will serve as the element that we designate as the "container" for our content.-->
 
+<!-- We can add the navbar as a partial into our boilerplate. Upon doing so, we might notice that the "body" content of the page is being obstructed by the navbar. In order to compensate, we can add a margin to our container to offset the text. -->
+
+<!-- We can add a footer as a partial into our boilerplate. Upon doing so, we notice that the footer will not be "fixed" to the bottom of the page if the amount of "body" content is not enough. In order to force the footer to be sent to the bottom, we can use Flexbox. This involves "initializing Flexbox" on the body using "d-flex". We want the elements of the body tag (e.g. navbar, "body", footer) to be arranged down a column so we use "flex column". In order to have the footer placed at the bottom of the screen, this means that the body tag itself must take up the entire page (i.e. at least vertically.) This is accomplished using vh-100". Lastly, in order to send the footer to the bottom of the page, we add a "top margin" to the footer (i.e. add "mt-auto" to the class of the footer). This makes it so that if there isn't a lot of content on the screen, the footer will still be sent to the bottom of the screen (i.e. the bottom of the body tag).  -->
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -19,10 +24,12 @@ To see this in action, we will first modify our index template. We use the // "%
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
 </head>
 
-<body>
-    <main class="container">
+<body class="d-flex flex-column vh-100">
+    <%- include('../partials/navbar')%>
+    <main class="container mt-5">
     <%- body %>
     </main>
+    <%- include('../partials/footer')%>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
 </body>
 

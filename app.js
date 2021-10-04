@@ -288,3 +288,17 @@ Now that we have set up "EJS-Mate," we are ready to begin including CSS into our
 
 *Go to boilerplate.ejs*
 */
+
+// --- CODE TRANSITION: 03b to 03c ---
+
+/*
+Now that we have set up Bootstrap, we will begin adding styling and extra functionality to our web pages. Ultimately, we will add a navbar, header and footer, campground images, as well as overall styling.
+
+To expedite this, I will be copying content when I don't feel that there is any educational benefit to writing out the code. 
+
+We will first set up the navbar. This will involve writing the navbar code and then announcing it as a partial. Afterwards, we will incorporate the navbar partial in our boilerplate layout.
+
+*Go to views/partials/navbar.ejs; Go to boilerplate_start.ejs*
+
+After we have created our navbar, the next step is to create a footer. This will be a partial as well.
+*/
