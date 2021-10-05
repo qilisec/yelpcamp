@@ -1,33 +1,29 @@
 <!-- This template page will list all the details of the chosen campground. -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= identifiedCamp.title %> - Details</title>
-</head>
-<body>
-    <h1><%=identifiedCamp.title%>:</h1>
-    <ul>
-        <li>
-            ID: <%= identifiedCamp._id %>
-        </li>
-        <li>
-            Location: <%= identifiedCamp.location %>
-        </li>
-    </ul>
-    <br>
-    <a href="/campgrounds/<%=identifiedCamp._id%>/edit">Edit This Campground</a>
-    <br>
-    <form action="/campgrounds/<%=identifiedCamp._id%>?_method=delete" method=POST> 
-        <!-- Careless Mistake: "<form action="....?_method=delete"", not "<form action="...."?_method=delete".
-            Careless Mistake: "<form action="....?_method=delete"", not "<form action="...._method?=delete""
-            Note: No difference between "method=POST" and "method="POST"" -->
-        <button>Delete this Campground</button>
-    </form>
-    <br>
-    <a href="/campgrounds">Return to Campground Index</a>
-</body>
-</html>
+<% layout("layouts/boilerplate_start") %>
+
+<div class="row">
+    <div class="col-6 offset-3">
+        <div class="card mb-3">
+            <img class="card-img-top" src="<%= identifiedCamp.image %>" alt="Card image cap">
+            <div class="card-body">
+                <h5 class="card-title"><%= identifiedCamp.title %></h5>
+                <p class="card-text"><%= identifiedCamp.description %></p>
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item text-muted"><%= identifiedCamp.location %></li>
+                <li class="list-group-item">$<%= identifiedCamp.price %> per night</li>
+              </ul>
+            <div class="card-body">
+                <a class="card-link btn btn-info" href="/campgrounds/<%=identifiedCamp._id%>/edit">Edit</a>
+                <form class="d-inline" action="/campgrounds/<%=identifiedCamp._id%>?_method=delete" method=POST>
+                    <button class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+            <div class="card-footer text-muted">
+                2 days ago
+            </div>
+        </div>
+    </div>
+</div>

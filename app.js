@@ -174,18 +174,37 @@ As with the DELETE route, we need to use "Method Override" in order to convert t
 *Go to show.ejs and edit.ejs*
 */
 
+
+// --- CODE TRANSITION: 02 to 03 ---
+
+/*
+We will now start working on the appearance of the site. That is, we will begin working on the styling. To do this, we will be using Bootstrap
+
+Before that, we will set up our ejs templates so that we can more easily export our styling to every page. To facilitate this setup, we will download "EJS-mate" which improves on the ease-of-use of partials by consolidating those partials into a single "boilerplate" file that can serve as the starting point of every one of our "EJS pages". This way, we do not need to add multiple partial templates to each page. Rather, the "partial" that is included in each template page will actually be the body of the text.
+
+We install "EJS-mate" using "npm i ejs-mate"
+
+We then "initialize" the module by first "requiring" it and then setting "app.engine" to use "ejs-mate".
+
+Afterwards, we create a "layouts" directory in our "views" directory. This is where we place the file that will serve as our "boilerplate"
+
+*Go to ./views/layouts/boilerplate.ejs*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
 const express = require("express");
 const path = require("path")
 const app = express();
+const ejsMate = require("ejs-mate") // Requiring "EJS-mate"
 const Campground = require("./models/models.js")
-const methodOverride = require("method-override") // No difference between "require(...)" and "require (...)"
+const methodOverride = require("method-override")
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
+app.engine("ejs", ejsMate) // Setting "ejs-mate" to be the "engine"
 app.use(express.urlencoded({extended:true}))
 app.use(methodOverride("_method")) 
 
@@ -262,10 +281,81 @@ app.listen(3000, () => {
     console.log("serving on port 3000")
 })
 
-// --- CODE TRANSITION: 02 to 03 ---
+// --- CODE TRANSITION: 03a to 03b ---
 
 /*
-Now that we have set up our basic CRUD routes, we will learn how to handle errors in Express. To do this, I will create a separate JS file where I will record my notes on the lesson. This file will be "notes_on_errors.js"
+Now that we have set up "EJS-Mate," we are ready to begin including CSS into our webpages. We will do this via Bootstrap. Thus, we will need to set up our webpages to "pull" the resources and scripts that Bootstrap needs upon navigation. We can do this easily by incorporating that code within our "boilerplate" layout.
+
+*Go to boilerplate.ejs*
+*/
+
+// --- CODE TRANSITION: 03b to 03c ---
+
+/*
+Now that we have set up Bootstrap, we will begin adding styling and extra functionality to our web pages. Ultimately, we will add a navbar, header and footer, campground images, as well as overall styling.
+
+To expedite this, I will be copying content when I don't feel that there is any educational benefit to writing out the code. 
+
+We will first set up the navbar. This will involve writing the navbar code and then announcing it as a partial. Afterwards, we will incorporate the navbar partial in our boilerplate layout.
+
+*Go to views/partials/navbar.ejs; Go to boilerplate_start.ejs*
+
+After we have created our navbar, the next step is to create a footer. This will be a partial as well.
+*/
+
+// --- CODE TRANSITION: 03c to 03d ---
+
+/*
+We will now add images to each of our campgrounds. To do this, we need to find an image source. We will also need to update our campground model, which will involve also updating our Campground schema. Lastly, we will need to update our Campground "seeding" function to generate a new set of campgrounds that we can "play around" with, now having included the images. Afterwards, we will add our styling which will incorporate these new images.
+
+We will obtain our images from a website called "Unsplash".
+
+*Go to models/campground.js, seeds/index.js*
+*/
+
+/*
+Once we have created a new set of Campgrounds with descriptions, images  and prices, we can now modify our "show" template to display the image stored in the document.
+
+*Go to campgrounds/show.ejs*
+*/
+
+/*
+Once we have set up the "show" page for our new campgrounds, we can begin styling for our index page.
+
+We will display our campground entries using "Bootstrap Cards"
+
+*Go to campgrounds/index.ejs*
+*/
+
+/*
+Once we have the basic styling complete for our index template, we can begin styling for our "new campground" form. 
+
+We will use a "grid" layout
+
+*Go to campgrounds/new.ejs*
+*/
+
+/*
+We will style our "edit" template to match the styling on our "new campground" template.
+
+*Go to campgrounds/edit.ejs*
+*/
+
+/*
+We will style our "show"template to match the styling on our "New Campground" and "Edit Campground" templates.
+
+As with our index page, we will use "Bootstrap Cards" along with a "grid" layout.
+
+*Go to campgrounds/show.ejs*
+*/
+
+
+// --- Code Transition: 03 to 04 ---
+
+
+
+/*
+Now that we have set up our basic CRUD routes and styled them, we will learn how to handle errors in Express. To do this, I will create a separate JS file where I will record my notes on the lesson. This file will be "notes_on_errors.js"
 
 *Go to notes_on_errors.js*
 */

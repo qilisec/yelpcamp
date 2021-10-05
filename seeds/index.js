@@ -23,10 +23,14 @@ const seedDB = async () => {
     // await c.save();
     for (let i=0; i < 50; i++) {
         const random1000 = Math.floor(Math.random() * 1000);
+        const price = Math.floor(Math.random() * 20) + 10;
         const randArrayEntry = array => array[Math.floor(Math.random() * array.length)]; // Unnecessary; just for speed.
         const campCityState = new Campground({
             title: `${randArrayEntry(descriptors)} ${randArrayEntry(places)}`,
-            location: `${cities[random1000].city}, ${cities[random1000].state}`
+            location: `${cities[random1000].city}, ${cities[random1000].state}`,
+            image: "https://source.unsplash.com/collection/483251",
+            description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus aspernatur impedit adipisci dicta, inventore cum? Molestiae et, saepe eius nostrum iusto quibusdam necessitatibus accusamus quos expedita, repellendus, nobis cumque reiciendis?",
+            price
             })
             await campCityState.save()
         }
