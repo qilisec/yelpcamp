@@ -3,7 +3,8 @@ const Schema = mongoose.Schema; // Unnecessary; just for speed
 
 const CampgroundSchema = new Schema({
     title: String,
-    price: String,
+    image: String,
+    price: Number, // Changed to "number"
     description: String,
     location: String
 })

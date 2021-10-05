@@ -302,3 +302,49 @@ We will first set up the navbar. This will involve writing the navbar code and t
 
 After we have created our navbar, the next step is to create a footer. This will be a partial as well.
 */
+
+// --- CODE TRANSITION: 03c to 03d ---
+
+/*
+We will now add images to each of our campgrounds. To do this, we need to find an image source. We will also need to update our campground model, which will involve also updating our Campground schema. Lastly, we will need to update our Campground "seeding" function to generate a new set of campgrounds that we can "play around" with, now having included the images. Afterwards, we will add our styling which will incorporate these new images.
+
+We will obtain our images from a website called "Unsplash".
+
+*Go to models/campground.js, seeds/index.js*
+*/
+
+/*
+Once we have created a new set of Campgrounds with descriptions, images  and prices, we can now modify our "show" template to display the image stored in the document.
+
+*Go to campgrounds/show.ejs*
+*/
+
+/*
+Once we have set up the "show" page for our new campgrounds, we can begin styling for our index page.
+
+We will display our campground entries using "Bootstrap Cards"
+
+*Go to campgrounds/index.ejs*
+*/
+
+/*
+Once we have the basic styling complete for our index template, we can begin styling for our "new campground" form. 
+
+We will use a "grid" layout
+
+*Go to campgrounds/new.ejs*
+*/
+
+/*
+We will style our "edit" template to match the styling on our "new campground" template.
+
+*Go to campgrounds/edit.ejs*
+*/
+
+/*
+We will style our "show"template to match the styling on our "New Campground" and "Edit Campground" templates.
+
+As with our index page, we will use "Bootstrap Cards" along with a "grid" layout.
+
+*Go to campgrounds/show.ejs*
+*/
