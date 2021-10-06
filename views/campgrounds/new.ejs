@@ -2,33 +2,44 @@
 
 Note: Check what "form action="/...." refers to again-->
 
+<!-- In order to request bootstrap to handle form validation, we first add "required" to each input tag that we want to be mandatory. If we only perform this step, we are only "engaging" the standard HTML feature for input "validation". In order to get Bootstrap involved, we also need to add "novalidate" to the form tag. This disables the native HTML validation activity. We then add a JS script (supplied by Bootstrap documentation) to the HTML page which will interact with Bootstrap to provide client-side validation. -->
+
+<!-- After we have verified that our changes work, we can move the script to the "boilerplate" layout. -->
+
+
+
 <% layout("layouts/boilerplate_start") %>
 <div class="row">
     <h1 class="text-center">New Campground</h1>
     <div class="col-6 offset-3">
-        <form action="/campgrounds" method="POST">
+        <form action="/campgrounds" method="POST" novalidate class="validated-form">
             <div class="mb-3">
                 <label class="form-label" for="title">Title</label>
-                <input class="form-control" type="text" id="title" name="campground[title]">
+                <input class="form-control" type="text" id="title" name="campground[title]" required>
+                <div class="valid-feedback">Valid</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="location">Location</label>
-                <input class="form-control" type="text" id="location" name="campground[location]">
+                <input class="form-control" type="text" id="location" name="campground[location]" required>
+                <div class="valid-feedback">Valid</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="image">Image URL</label>
-                <input class="form-control" type="text" id="image" name="campground[image]">
+                <input class="form-control" type="text" id="image" name="campground[image]" required>
+                <div class="valid-feedback">Valid</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="price">Price</label>
                 <div class="input-group">
                     <span class="input-group-text" id="basic-addon!">$</span>
-                    <input type="text" class="form-control" id="price" placeholder="0.00" aria-label="price" aria-describedby="price-label" name="campground[price]">
+                    <input type="text" class="form-control" id="price" placeholder="0.00" aria-label="price" aria-describedby="price-label" name="campground[price]" required>
+                    <div class="valid-feedback">Valid</div>
                 </div>
             </div>
             <div class="mb-3>
                 <label class="form-label" for="description">Description</label>
-                <textarea class="form-control" type="text" id="description" name="campground[description]"></textarea>
+                <textarea class="form-control" type="text" id="description" name="campground[description]" required></textarea>
+                <div class="valid-feedback">Valid</div>
             </div>
             <div class="mb-3">
                 <button class="btn btn-success">Add Campground</button>

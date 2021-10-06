@@ -369,3 +369,19 @@ To do this, we will be using Bootstrap, which is a CSS "tool". However, this mea
 
 As such, I will put this Yelp-Camp project "on-hold" until I have the necessary knowledge to continue.
 */
+
+
+// --- Code Transition: 04.5 to 05 ---
+
+/*
+We will now add "client-side" validation. This will prevent users from submitting new campgrounds or editing campgrounds with "improper values".
+
+We can do this simply by adding the "required" attribute to our input tags as a HTML form feature. However, this is not attractive design and also, it won't help in the cases where users input "wrong" data (i.e. strings), only in cases where users completely fail to input strings for any campground attribute fields.
+
+We will instead use Bootstrap to handle "client-side" validation. Bootstrap can verify whether the user has submitted "appropriate" and "sufficient" information for each campground field as well, in the cases where the user hasn't, inform the user what they need to fix.
+
+We will first work on the "New Campground" template. Following that, we will change the "Edit Campground" template.
+
+*Go to views/campgrounds/new.ejs*
+*/
+
