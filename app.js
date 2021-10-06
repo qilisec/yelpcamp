@@ -191,95 +191,6 @@ Afterwards, we create a "layouts" directory in our "views" directory. This is wh
 *Go to ./views/layouts/boilerplate.ejs*
 */
 
-/*
-***&&& MODULE SETUP &&&***
-*/
-const express = require("express");
-const path = require("path")
-const app = express();
-const ejsMate = require("ejs-mate") // Requiring "EJS-mate"
-const Campground = require("./models/models.js")
-const methodOverride = require("method-override")
-
-app.set("view engine", "ejs")
-app.set("views", path.join(__dirname, "views"))
-
-app.engine("ejs", ejsMate) // Setting "ejs-mate" to be the "engine"
-app.use(express.urlencoded({extended:true}))
-app.use(methodOverride("_method")) 
-
-const mongoose = require("mongoose")
-
-mongoose.connect("mongodb://localhost:27017/yelp-camp", {
-    useNewUrlParser: true,
-    // useCreateIndex: true, // When I enable this option, mongoose does not work.
-    useUnifiedTopology: true
-})
-
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => {
-    console.log("Database connected");
-});
-
-/*
-***&&& EXPRESS ROUTES &&&***
-*/
-app.get("/campgrounds/:id/edit", async (req, res) => {
-    const identifiedCamp = await Campground.findById(req.params.id)
-    res.render("campgrounds/edit", {identifiedCamp})
-})
-
-app.put("/campgrounds/:id", async (req, res) => {
-    const {id} = await req.params
-    const updateCamp = await Campground.findByIdAndUpdate(id, {title: req.body.campground.title, location: req.body.campground.location}, {new: true})
-    // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
-    console.log(id)
-    console.log(updateCamp)
-    await updateCamp.save()
-    res.redirect("/campgrounds")
-})
-
-app.delete("/campgrounds/:id", async (req, res) => {
-    const identifiedCamp = await Campground.findByIdAndDelete(req.params.id)
-    res.redirect("/campgrounds") 
-    // Careless Mistake: "res.redirect("/campgrounds"), not "res.redirect(campgrounds). This caused a "CastError".
-})
-
-app.get("/campgrounds/new", (req, res) => {
-    console.log("New Campground")
-    res.render("campgrounds/new")
-})
-
-app.post("/campgrounds", async (req, res) => {
-    const newCamp = new Campground(req.body.campground);
-    await newCamp.save()
-    res.redirect("/campgrounds")
-})
-
-app.get("/campgrounds/:id", async (req, res) => {
-    const identifiedCamp = await Campground.findById(req.params.id)
-    // console.log(req.params.id) // req.params.id is a string
-    console.log("Show Details")
-    console.log(req.params)
-    res.render("campgrounds/show", {identifiedCamp})
-})
-
-app.get("/campgrounds", async (req, res) => {
-    console.log("Index")
-    const campgroundIndex = await Campground.find({})
-    res.render("campgrounds/index", {campgroundIndex})
-})
-// For some reason, if I start on "/campgrounds/" and not "/campgrounds", when I click a campground, I get directed to "/campgrounds/campgrounds/..id"
-
-app.get ("/", (req, res) => {
-    console.log("test")
-    res.render("test")
-})
-
-app.listen(3000, () => {
-    console.log("serving on port 3000")
-})
 
 // --- CODE TRANSITION: 03a to 03b ---
 
@@ -385,3 +296,122 @@ We will first work on the "New Campground" template. Following that, we will cha
 *Go to views/campgrounds/new.ejs*
 */
 
+
+// --- Code Transition: 05a to 05b ---
+
+/*
+In the previous section, we learned about how to create custom error handlers for Express using a farm-stand web app as our reference "program". We will now set up the same kind of custom error handling for our YelpCamp web application.
+
+We start by creating the custom error handler as well as wrapping our CRUD routes in "try-catch" statements. Since most of our routes involve asynchronous behavior, our "catch" portion needs to involve passing the "error" to the "next" function.
+*/
+
+/*
+***&&& MODULE SETUP &&&***
+*/
+const express = require("express");
+const path = require("path")
+const app = express();
+const ejsMate = require("ejs-mate") // Requiring "EJS-mate"
+const Campground = require("./models/models.js")
+const methodOverride = require("method-override")
+
+app.set("view engine", "ejs")
+app.set("views", path.join(__dirname, "views"))
+
+app.engine("ejs", ejsMate) // Setting "ejs-mate" to be the "engine"
+app.use(express.urlencoded({extended:true}))
+app.use(methodOverride("_method")) 
+
+const mongoose = require("mongoose")
+
+mongoose.connect("mongodb://localhost:27017/yelp-camp", {
+    useNewUrlParser: true,
+    // useCreateIndex: true, // When I enable this option, mongoose does not work.
+    useUnifiedTopology: true
+})
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+    console.log("Database connected");
+});
+
+/*
+***&&& EXPRESS ROUTES &&&***
+*/
+app.get("/campgrounds/:id/edit", async (req, res) => {
+    const identifiedCamp = await Campground.findById(req.params.id)
+    res.render("campgrounds/edit", {identifiedCamp})
+})
+
+app.put("/campgrounds/:id", async (req, res) => {
+    const {id} = await req.params
+    const updateCamp = await Campground.findByIdAndUpdate(id, {title: req.body.campground.title, location: req.body.campground.location}, {new: true})
+    // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
+    console.log(id)
+    console.log(updateCamp)
+    await updateCamp.save()
+    res.redirect("/campgrounds")
+})
+
+app.delete("/campgrounds/:id", async (req, res) => {
+    const identifiedCamp = await Campground.findByIdAndDelete(req.params.id)
+    res.redirect("/campgrounds") 
+    // Careless Mistake: "res.redirect("/campgrounds"), not "res.redirect(campgrounds). This caused a "CastError".
+})
+
+app.get("/campgrounds/new", (req, res) => {
+    console.log("New Campground")
+    res.render("campgrounds/new")
+})
+
+
+/* 
+&&&&&&&&&&&&&&&&&&&&&&&&&
+We set up error handling for our "New Campground" route by wrapping it in a "try-catch" statement. We also need to add "next" as a parameter to our anonymous asynchronous function.
+&&&&&&&&&&&&&&&&&&&&&&&&&
+*/
+
+app.post("/campgrounds", async (req, res, next) => {
+    try {
+    const newCamp = new Campground(req.body.campground);
+    await newCamp.save()
+    res.redirect("/campgrounds")
+    } catch(e) {
+        next(e)
+    }
+})
+
+app.get("/campgrounds/:id", async (req, res) => {
+    const identifiedCamp = await Campground.findById(req.params.id)
+    // console.log(req.params.id) // req.params.id is a string
+    console.log("Show Details")
+    console.log(req.params)
+    res.render("campgrounds/show", {identifiedCamp})
+})
+
+app.get("/campgrounds", async (req, res) => {
+    console.log("Index")
+    const campgroundIndex = await Campground.find({})
+    res.render("campgrounds/index", {campgroundIndex})
+})
+// For some reason, if I start on "/campgrounds/" and not "/campgrounds", when I click a campground, I get directed to "/campgrounds/campgrounds/..id"
+
+app.get ("/", (req, res) => {
+    console.log("test")
+    res.render("test")
+})
+
+/* 
+&&&&&&&&&&&&&&&&&&&&&&&&&
+The following will be the rudimentary form of our custom error handler:
+&&&&&&&&&&&&&&&&&&&&&&&&&
+*/
+
+app.use((err, req, res, next) => {
+    res.send("Oh boy, something went wrong.")
+})
+
+app.listen(3000, () => {
+    console.log("serving on port 3000")
+})
