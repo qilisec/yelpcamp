@@ -329,7 +329,7 @@ const express = require("express");
 const path = require("path")
 const app = express();
 const ejsMate = require("ejs-mate") // Requiring "EJS-mate"
-const catchAsync = require("./utils/catchAsync.js")
+const catchAsync = require("./utils/catchAsync.js") // "Requiring" our new Async "wrapper"
 const Campground = require("./models/models.js")
 const methodOverride = require("method-override")
 
@@ -357,14 +357,36 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
-app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => {
+app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => { 
+    // Wrap all async functions in our CRUD routes with catchAsync function to allow for error catching without using "try-catch" syntax
     const identifiedCamp = await Campground.findById(req.params.id)
     res.render("campgrounds/edit", {identifiedCamp})
 }))
 
+
+// app.put("/campgrounds/:id", catchAsync(async (req, res) => {
+//     const {id} = await req.params
+//     const updateCamp = await Campground.findByIdAndUpdate(id, {title: req.body.campground.title, location: req.body.campground.location, image: req.body.campground.image, price: req.body.campground.price, description: req.body.campground.description}, {new: true})
+//     // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
+//     console.log(id)
+//     console.log(updateCamp)
+//     await updateCamp.save()
+//     res.redirect("/campgrounds")
+// }))
+
+/* 
+&&&&&&&&&&&&&&&&&&&&&&&&&
+Troubleshooting: Even though I include the catchAsync wrapper in our PUT route, whenever I try editing a campground's price with an "improper" price, I am not sent to my custom error handler. Instead, I am redirected to the Campground index and the Campground remains unchanged.
+
+Solution: My "updateCamp" function was not updated to include the new campground properties for updating the campground document. Thus, whenever I was submitting my changes, the only thing that was actually being saved were the campground title and location. The fix was to include the new properties in my updateCamp function.
+
+A more "elegant" fix would be to use the "spread" feature instead of typing all of the properties out.
+&&&&&&&&&&&&&&&&&&&&&&&&&
+*/
+
 app.put("/campgrounds/:id", catchAsync(async (req, res) => {
     const {id} = await req.params
-    const updateCamp = await Campground.findByIdAndUpdate(id, {title: req.body.campground.title, location: req.body.campground.location}, {new: true})
+    const updateCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground}, {new: true})
     // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
     console.log(id)
     console.log(updateCamp)
