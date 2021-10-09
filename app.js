@@ -322,21 +322,33 @@ After recreating these pieces of code, we will import them into app.js and requi
 We then need to modify our routes so that we are using the "catchAsync" "wrapper" function
 */
 
+
+// --- Code Transition: 05c to 05d ---
+
+/*
+We can improve the utility of our rudimentary custom error handler we've created by involving the more robust error class written in "ExpressError.js" which will extract more useful information from the error which can then be passed onto our error handler.
+
+We must first "require" the Express Error handler.
+
+We can then 
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
 const express = require("express");
 const path = require("path")
 const app = express();
-const ejsMate = require("ejs-mate") // Requiring "EJS-mate"
+const ejsMate = require("ejs-mate")
 const catchAsync = require("./utils/catchAsync.js") // "Requiring" our new Async "wrapper"
+const ExpressError = require("./utils/ExpressError.js") // "Requiring" our new Express Error class
 const Campground = require("./models/models.js")
 const methodOverride = require("method-override")
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
-app.engine("ejs", ejsMate) // Setting "ejs-mate" to be the "engine"
+app.engine("ejs", ejsMate)
 app.use(express.urlencoded({extended:true}))
 app.use(methodOverride("_method")) 
 
@@ -363,16 +375,6 @@ app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => {
     res.render("campgrounds/edit", {identifiedCamp})
 }))
 
-
-// app.put("/campgrounds/:id", catchAsync(async (req, res) => {
-//     const {id} = await req.params
-//     const updateCamp = await Campground.findByIdAndUpdate(id, {title: req.body.campground.title, location: req.body.campground.location, image: req.body.campground.image, price: req.body.campground.price, description: req.body.campground.description}, {new: true})
-//     // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
-//     console.log(id)
-//     console.log(updateCamp)
-//     await updateCamp.save()
-//     res.redirect("/campgrounds")
-// }))
 
 /* 
 &&&&&&&&&&&&&&&&&&&&&&&&&
@@ -405,13 +407,6 @@ app.get("/campgrounds/new", (req, res) => {
     res.render("campgrounds/new")
 })
 
-
-/* 
-&&&&&&&&&&&&&&&&&&&&&&&&&
-We set up error handling for our "New Campground" route by wrapping it in a "try-catch" statement. We also need to add "next" as a parameter to our anonymous asynchronous function.
-&&&&&&&&&&&&&&&&&&&&&&&&&
-*/
-
 app.post("/campgrounds", catchAsync(async (req, res, next) => {
     const newCamp = new Campground(req.body.campground);
     await newCamp.save()
@@ -441,12 +436,23 @@ app.get ("/", (req, res) => {
 
 /*
 &&&&&&&&&&&&&&&&&&&&&&&&&
-The following will be the rudimentary form of our custom error handler:
+The following will be our enhanced custom error handler. We add the following functionality. If we attempt to navigate to a route which was not delineated by any of the route "rules" above, the "app.all("*"...) route is invoked which turns the request that was sent to the user into an error of the custom error class "ExpressError". 
+
+This modified error is then based to our "rudimentary" error handler, which we have modified to be able to "capture" the "statusCode" and "message" properties of the incoming error request ("status code" and "message" being properties of errors of the ExpressErrors error class.). 
+
+Our modified error handler then creates an error as a response, which sets the status code and sends a message based on what the ExpressError error told it.
+
+If we trigger an error while on a "delineated" route, then the "app.all("*",...)" is not invoked and our custom error handler displays an error of status code "500" as well as a generic message, both of which are set as defaults.
 &&&&&&&&&&&&&&&&&&&&&&&&&
 */
 
+app.all("*", (req, res, next) => {
+    next(new ExpressError("Page Not Found", 404))
+})
+
 app.use((err, req, res, next) => {
-    res.send("Oh boy, something went wrong.")
+    const {statusCode = 500, message = "Something Went Wrong"} = err
+    res.status(statusCode).send(message)
 })
 
 app.listen(3000, () => {
