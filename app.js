@@ -350,7 +350,7 @@ After creating our "error" template, we can have our custom error handler "res.r
 
 
 
-// --- Code Transition: 05d to 05e ---
+// --- Code Transition: 05e to 05f ---
 
 /*
 While we have already set up client-side validation for the creation and editing of campgrounds, we still do not have a "robust" form of validation. Our client side validation can be circumvented if a "direct" POST or PUT request is sent to our website using something like Postman. 
@@ -358,6 +358,15 @@ While we have already set up client-side validation for the creation and editing
 The next step in creating a stronger implementation of validation is to use "server side" validation. Whereas client-side validation looks at the contents of the proposed request and blocks it from being sent out if not appropriate, server-side validation will look at the contents of the request after it is sent but prevent it from being saved into our Database if the information given is not "appropriate". The most primitive way of doing so is to add "validation steps" for every property on our creation and update routes but this does not scale well if there are a lot of properties. 
 
 To perform server-side validation efficiently, we will use a new npm package called "JOI". This can be installed using "npm i joi". After installation, we need to "require" JOI and then create a "JOI schema". This "JOI schema" will define to JOI, what each "submission" should look like. We then tell JOI to perform validation on each submission, following the schema we constructed.
+*/
+
+
+
+// --- Code Transition: 05f to 05g ---
+
+/*
+Instead of defining the schema within the route that we would like "Joi" to apply to, we can instead define the schema and subsequent "checks" in a Express middleware which will allow us to easily enable this validation for routes of our choosing.
+
 */
 
 /*
@@ -368,8 +377,8 @@ const path = require("path")
 const app = express();
 const ejsMate = require("ejs-mate")
 const Joi = require("joi") // "Requiring" Joi
-const catchAsync = require("./utils/catchAsync.js") // "Requiring" our new Async "wrapper"
-const ExpressError = require("./utils/ExpressError.js") // "Requiring" our new Express Error class
+const catchAsync = require("./utils/catchAsync.js")
+const ExpressError = require("./utils/ExpressError.js")
 const Campground = require("./models/models.js")
 const methodOverride = require("method-override")
 
@@ -397,24 +406,67 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
-app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => { 
-    // Wrap all async functions in our CRUD routes with catchAsync function to allow for error catching without using "try-catch" syntax
+
+
+// const validateCampground = (req, res, next) => { // Our new "server-side validation" middle-ware
+//     const campgroundSchema = Joi.object({
+//         campground: Joi.object({
+//          title: Joi.string().required(),
+//          location: Joi.string().required(),
+//          price: Joi.number().required().min(0),
+//          image: Joi.string(),
+//          description: Joi.string()
+//         }).required()
+//     })
+//     const {error} = campgroundSchema.validate(req.body) 
+//     if (error) {
+//         const msg = error.details.map(el => el.message).join(",")
+//         throw new ExpressError(msg, 400)
+//     } else {
+//         next(); // Now that we are placing our "validation" function into a middleware, we need to call "next" to have our request be sent to the next function in our "middle-ware chain" (i.e. when the validation does not produce any errors).
+//     }
+// }
+
+
+/*
+&&&&&&&&&&&&&&&&&&&&&&&&&
+In actuality, having the actual Joi schema be defined in the Joi validation function itself adds unneeded redundancy. We can instead move the Joi schema to a new file and then have the validation function "pull" that schema whenever it is invoked.
+
+We will name this file "schemas.js" and place in the root directory of the app.
+
+*Go to schemas.js*
+
+Once we set up "schemas.js", we can turn campgroundSchema into a module export and use it in "app.js" by "requiring" it. 
+
+Also, now that we are not defining the schema within "app.js", we no longer need to require Joi in app.js.
+&&&&&&&&&&&&&&&&&&&&&&&&&
+*/
+
+const { campgroundSchema } = require("./schemas") 
+
+/*
+&&&&&&&&&&&&&&&&&&&&&&&&&
+We use the "destructured" form to "import" campgroundSchema because, in the future, we may create additional Joi schemas within "schemas.js" and by using this destructured form now, we can more easily import more schemas from within schema.js by adding to this destructured form (e.g. const { campgroundSchema, otherSchema, ... } = require("schemas"))
+&&&&&&&&&&&&&&&&&&&&&&&&&
+*/
+
+
+const validateCampground = (req, res, next) => { // Our new "server-side validation" middle-ware
+    const {error} = campgroundSchema.validate(req.body) 
+    if (error) {
+        const msg = error.details.map(el => el.message).join(",")
+        throw new ExpressError(msg, 400)
+    } else {
+        next(); // Now that we are placing our "validation" function into a middleware, we need to call "next" to have our request be sent to the next function in our "middle-ware chain" (i.e. when the validation does not produce any errors).
+    }
+}
+
+app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => {
     const identifiedCamp = await Campground.findById(req.params.id)
     res.render("campgrounds/edit", {identifiedCamp})
 }))
 
-
-/* 
-&&&&&&&&&&&&&&&&&&&&&&&&&
-Troubleshooting: Even though I include the catchAsync wrapper in our PUT route, whenever I try editing a campground's price with an "improper" price, I am not sent to my custom error handler. Instead, I am redirected to the Campground index and the Campground remains unchanged.
-
-Solution: My "updateCamp" function was not updated to include the new campground properties for updating the campground document. Thus, whenever I was submitting my changes, the only thing that was actually being saved were the campground title and location. The fix was to include the new properties in my updateCamp function.
-
-A more "elegant" fix would be to use the "spread" feature instead of typing all of the properties out.
-&&&&&&&&&&&&&&&&&&&&&&&&&
-*/
-
-app.put("/campgrounds/:id", catchAsync(async (req, res) => {
+app.put("/campgrounds/:id", validateCampground, catchAsync(async (req, res) => { // We tell Express to use our "validation middle-ware" by inserting "validateError" before our anonymous "catchAsync(async(req, res)...)" function
     const {id} = await req.params
     const updateCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground}, {new: true})
     // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
@@ -435,43 +487,7 @@ app.get("/campgrounds/new", (req, res) => {
     res.render("campgrounds/new")
 })
 
-app.post("/campgrounds", catchAsync(async (req, res, next) => {
-    // if (!req.body.campground) throw new ExpressError("Invalid Campground Data", 400)
-    /*
-    This is one way of performing "server side" validation but it is insufficient since it's possible that there will be "some" "Campground" content (e.g. name) but not others (e.g. price). 
-    */
-   const campgroundSchema = Joi.object({
-       campground: Joi.object({
-        title: Joi.string().required(),
-        location: Joi.string().required(),
-        price: Joi.number().required().min(0),
-        image: Joi.string(),
-        description: Joi.string()
-       }).required()
-       /*
-       Here we define the schema for Joi to "keep in mind". We can set each property to either be "required" or not. We can also add further "constraints" such as requiring a value be a number greater than 0 or a string to be comprised of only alphanumeric characters
-       */
-    })
-    // const result = campgroundSchema.validate(req.body) 
-    /* This line is what actually tells Joi to use the defined schema to validate our submitted requests.
-    */
-    // console.log(result) // "console.logs" the result of the validation
-
-
-    // if (result.error) {
-    //     throw new ExpressError(result.error.details, 400)
-    // }
-
-    /*
-    The above code tells our route to "throw" an ExpressError if the result that Joi produced was an error (with status code 400) and have the "message" of that ExpressError be the contents of result.error.details. The problem is that "result.error.details" is an array so as "result.error.details" gets passed down into our custom error handler into our "error" template, what actually ends up being displayed is "Object". The actual "content" of "result.error.details" is contained within the elements of that array.
-
-    Thus, we first need to take all the elements of the "results.error.details" array and "join them together" which then arranges the details into a string.
-    */
-    const {error} = campgroundSchema.validate(req.body) 
-    if (error) {
-        const msg = error.details.map(el => el.message).join(",")
-        throw new ExpressError(msg, 400)
-    }
+app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) => {
     const newCamp = new Campground(req.body.campground);
     await newCamp.save()
     res.redirect("/campgrounds")
