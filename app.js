@@ -360,6 +360,15 @@ The next step in creating a stronger implementation of validation is to use "ser
 To perform server-side validation efficiently, we will use a new npm package called "JOI". This can be installed using "npm i joi". After installation, we need to "require" JOI and then create a "JOI schema". This "JOI schema" will define to JOI, what each "submission" should look like. We then tell JOI to perform validation on each submission, following the schema we constructed.
 */
 
+
+// --- Code Transition: 05f to 05g ---
+
+/*
+Instead of defining the schema within the route that we would like "Joi" to apply to, we can instead define the schema and subsequent "checks" in a Express middleware which will allow us to easily enable this validation for routes of our choosing.
+*/
+
+
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -368,8 +377,8 @@ const path = require("path")
 const app = express();
 const ejsMate = require("ejs-mate")
 const Joi = require("joi") // "Requiring" Joi
-const catchAsync = require("./utils/catchAsync.js") // "Requiring" our new Async "wrapper"
-const ExpressError = require("./utils/ExpressError.js") // "Requiring" our new Express Error class
+const catchAsync = require("./utils/catchAsync.js")
+const ExpressError = require("./utils/ExpressError.js")
 const Campground = require("./models/models.js")
 const methodOverride = require("method-override")
 
@@ -478,7 +487,7 @@ app.get("/campgrounds/new", (req, res) => {
     res.render("campgrounds/new")
 })
 
-app.post("/campgrounds", catchAsync(async (req, res, next) => {
+app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) => {
     // if (!req.body.campground) throw new ExpressError("Invalid Campground Data", 400)
     /*
     This is one way of performing "server side" validation but it is insufficient since it's possible that there will be "some" "Campground" content (e.g. name) but not others (e.g. price). 
