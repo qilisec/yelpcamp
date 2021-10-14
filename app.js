@@ -591,3 +591,11 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- Code Transition: 06d to 06e ---
+
+/*
+Next, we will add styling to the submitted reviews.
+
+*Go to views/campgrounds/show.ejs*
+*/
