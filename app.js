@@ -379,7 +379,7 @@ const ejsMate = require("ejs-mate")
 const Joi = require("joi") // "Requiring" Joi
 const catchAsync = require("./utils/catchAsync.js")
 const ExpressError = require("./utils/ExpressError.js")
-const Campground = require("./models/models.js")
+const Campground = require("./models/campgrounds.js")
 const methodOverride = require("method-override")
 
 app.set("view engine", "ejs")
@@ -593,3 +593,17 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- Code Transition: 05 to 06 ---
+
+/*
+Now that we have learned about setting up relationships between models in MongoDB and how to integrate those relationships in Express, we will now put this into action by creating "review" functionality to Yelp Camp.
+
+We first need to create a "review" schema and then create a "review" model. We will do this in a file separate from where our "campgrounds" model was created. This means that we should rename our "models.js" file to "campgrounds.js"
+
+*Go to models/review.js; rename "models.js" to "campgrounds.js"* 
+
+The reviews that are created will be associated with specific campgrounds. We will express the relationship between the campground and associated reviews by embedding the review ObjectIDs in each campground. This means that we need to add a "reviews" property in our campground schema.
+
+*Go to campgrounds.js*
+*/
