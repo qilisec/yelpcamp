@@ -368,6 +368,31 @@ Instead of defining the schema within the route that we would like "Joi" to appl
 */
 
 
+// --- Code Transition: 05 to 06 ---
+
+/*
+Now that we have learned about setting up relationships between models in MongoDB and how to integrate those relationships in Express, we will now put this into action by creating "review" functionality to Yelp Camp.
+
+We first need to create a "review" schema and then create a "review" model. We will do this in a file separate from where our "campgrounds" model was created. This means that we should rename our "models.js" file to "campgrounds.js"
+
+*Go to models/review.js; rename "models.js" to "campgrounds.js"* 
+
+The reviews that are created will be associated with specific campgrounds. We will express the relationship between the campground and associated reviews by embedding the review ObjectIDs in each campground. This means that we need to add a "reviews" property in our campground schema.
+
+*Go to campgrounds.js*
+*/
+
+// --- Code Transition: 06a to 06b ---
+
+/*
+We now need to add a form that allows us to write reviews.
+
+We will add the form on the campground page itself instead of navigating to a separate page where a review can be composed. Along with the review, we will set up functionality that allows users to submit a "rating" of the campground
+
+*Go to campgrounds/show.ejs*
+
+After we have set up the "review" form in our "show" template, we need to add a route that triggers Mongoose to save the review.
+*/
 
 /*
 ***&&& MODULE SETUP &&&***
@@ -380,6 +405,7 @@ const Joi = require("joi") // "Requiring" Joi
 const catchAsync = require("./utils/catchAsync.js")
 const ExpressError = require("./utils/ExpressError.js")
 const Campground = require("./models/campgrounds.js")
+const Review = require("./models/review.js") // "Requiring" the new "reviews" model
 const methodOverride = require("method-override")
 
 app.set("view engine", "ejs")
@@ -408,47 +434,7 @@ db.once("open", () => {
 */
 
 
-// const validateCampground = (req, res, next) => { // Our new "server-side validation" middle-ware
-//     const campgroundSchema = Joi.object({
-//         campground: Joi.object({
-//          title: Joi.string().required(),
-//          location: Joi.string().required(),
-//          price: Joi.number().required().min(0),
-//          image: Joi.string(),
-//          description: Joi.string()
-//         }).required()
-//     })
-//     const {error} = campgroundSchema.validate(req.body) 
-//     if (error) {
-//         const msg = error.details.map(el => el.message).join(",")
-//         throw new ExpressError(msg, 400)
-//     } else {
-//         next(); // Now that we are placing our "validation" function into a middleware, we need to call "next" to have our request be sent to the next function in our "middle-ware chain" (i.e. when the validation does not produce any errors).
-//     }
-// }
-
-
-/*
-&&&&&&&&&&&&&&&&&&&&&&&&&
-In actuality, having the actual Joi schema be defined in the Joi validation function itself adds unneeded redundancy. We can instead move the Joi schema to a new file and then have the validation function "pull" that schema whenever it is invoked.
-
-We will name this file "schemas.js" and place in the root directory of the app.
-
-*Go to schemas.js*
-
-Once we set up "schemas.js", we can turn campgroundSchema into a module export and use it in "app.js" by "requiring" it. 
-
-Also, now that we are not defining the schema within "app.js", we no longer need to require Joi in app.js.
-&&&&&&&&&&&&&&&&&&&&&&&&&
-*/
-
 const { campgroundSchema } = require("./schemas") 
-
-/*
-&&&&&&&&&&&&&&&&&&&&&&&&&
-We use the "destructured" form to "import" campgroundSchema because, in the future, we may create additional Joi schemas within "schemas.js" and by using this destructured form now, we can more easily import more schemas from within schema.js by adding to this destructured form (e.g. const { campgroundSchema, otherSchema, ... } = require("schemas"))
-&&&&&&&&&&&&&&&&&&&&&&&&&
-*/
 
 
 const validateCampground = (req, res, next) => { // Our new "server-side validation" middle-ware
@@ -457,7 +443,7 @@ const validateCampground = (req, res, next) => { // Our new "server-side validat
         const msg = error.details.map(el => el.message).join(",")
         throw new ExpressError(msg, 400)
     } else {
-        next(); // Now that we are placing our "validation" function into a middleware, we need to call "next" to have our request be sent to the next function in our "middle-ware chain" (i.e. when the validation does not produce any errors).
+        next();
     }
 }
 
@@ -466,10 +452,9 @@ app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => {
     res.render("campgrounds/edit", {identifiedCamp})
 }))
 
-app.put("/campgrounds/:id", validateCampground, catchAsync(async (req, res) => { // We tell Express to use our "validation middle-ware" by inserting "validateError" before our anonymous "catchAsync(async(req, res)...)" function
+app.put("/campgrounds/:id", validateCampground, catchAsync(async (req, res) => {
     const {id} = await req.params
     const updateCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground}, {new: true})
-    // {new: true is needed in order to have the console display the new details of the updated campground rather than the pre-update details.}
     console.log(id)
     console.log(updateCamp)
     await updateCamp.save()
@@ -488,10 +473,6 @@ app.get("/campgrounds/new", (req, res) => {
 })
 
 app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) => {
-    // if (!req.body.campground) throw new ExpressError("Invalid Campground Data", 400)
-    /*
-    This is one way of performing "server side" validation but it is insufficient since it's possible that there will be "some" "Campground" content (e.g. name) but not others (e.g. price). 
-    */
    const campgroundSchema = Joi.object({
        campground: Joi.object({
         title: Joi.string().required(),
@@ -500,25 +481,7 @@ app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) =
         image: Joi.string(),
         description: Joi.string()
        }).required()
-       /*
-       Here we define the schema for Joi to "keep in mind". We can set each property to either be "required" or not. We can also add further "constraints" such as requiring a value be a number greater than 0 or a string to be comprised of only alphanumeric characters
-       */
     })
-    // const result = campgroundSchema.validate(req.body) 
-    /* This line is what actually tells Joi to use the defined schema to validate our submitted requests.
-    */
-    // console.log(result) // "console.logs" the result of the validation
-
-
-    // if (result.error) {
-    //     throw new ExpressError(result.error.details, 400)
-    // }
-
-    /*
-    The above code tells our route to "throw" an ExpressError if the result that Joi produced was an error (with status code 400) and have the "message" of that ExpressError be the contents of result.error.details. The problem is that "result.error.details" is an array so as "result.error.details" gets passed down into our custom error handler into our "error" template, what actually ends up being displayed is "Object". The actual "content" of "result.error.details" is contained within the elements of that array.
-
-    Thus, we first need to take all the elements of the "results.error.details" array and "join them together" which then arranges the details into a string.
-    */
     const {error} = campgroundSchema.validate(req.body) 
     if (error) {
         const msg = error.details.map(el => el.message).join(",")
@@ -545,65 +508,44 @@ app.get("/campgrounds", catchAsync(async (req, res) => {
 }))
 // For some reason, if I start on "/campgrounds/" and not "/campgrounds", when I click a campground, I get directed to "/campgrounds/campgrounds/..id"
 
-app.get ("/", (req, res) => {
+app.get("/", (req, res) => {
     console.log("test")
     res.render("test")
 })
 
 /*
 &&&&&&&&&&&&&&&&&&&&&&&&&
-The following will be our enhanced custom error handler. We add the following functionality. If we attempt to navigate to a route which was not delineated by any of the route "rules" above, the "app.all("*"...) route is invoked which turns the request that was sent to the user into an error of the custom error class "ExpressError". 
+Our "route" to submit reviews should be an "extension" of our route to navigate to the "show" page of the campground that the review is for.
 
-This modified error is then based to our "rudimentary" error handler, which we have modified to be able to "capture" the "statusCode" and "message" properties of the incoming error request ("status code" and "message" being properties of errors of the ExpressErrors error class.). 
-
-Our modified error handler then creates an error as a response, which sets the status code and sends a message based on what the ExpressError error told it.
-
-If we trigger an error while on a "delineated" route, then the "app.all("*",...)" is not invoked and our custom error handler displays an error of status code "500" as well as a generic message, both of which are set as defaults.
+Upon submitting the review on the "show" page of the campground, Mongoose should:
+1. Find the campground using the req.param.id
+2. Create a new review using the new "review" model
+3. "Push" the new review onto the "reviews" property of the campground
+4. Save the new review
+5. Save the "updated" campground
 &&&&&&&&&&&&&&&&&&&&&&&&&
 */
+
+app.post("/campgrounds/:id/reviews", catchAsync(async (req, res) => {
+    const reviewedCampground = await Campground.findById(req.params.id);
+    const newReview = new Review(req.body.review);
+    reviewedCampground.reviews.push(newReview);
+    await newReview.save();
+    await reviewedCampground.save();
+    res.redirect(`/campgrounds/${reviewedCampground._id}`)
+}))
+
 
 app.all("*", (req, res, next) => {
     next(new ExpressError("Page Not Found", 404))
 })
 
-// app.use((err, req, res, next) => {
-//     const {statusCode = 500, message = "Something Went Wrong"} = err
-//     res.status(statusCode).render("error") // Changed from "send(message)" to "render("error")"
-// })
-
-/*
-&&&&&&&&&&&&&&&&&&&&&&&&&
-The issue with the above code is that we are not passing any "information" from the error to the template. Thus, we wouldn't have any way of using EJS to display the error's "message". One possibility is that we could pass in those properties a la "render("error", {statusCode, message})". However, if "err" could have a large number of properties, using that method can become tedious. 
-
-An alternative arises if we realize that the only reason we chose to define "statusCode" and "message" as destructured products of "err" was so that we could easily add default values. However, it is possible to add default values to these properties in other ways. Therefore, we can pass the entirety of "err" to "res.render" after defining a default value for "message". This way, we have "access" to all the properties of "err", no matter how many there are.
-
-For example, we can now "access" "err.stack", which is the stack trace generated by the error. We can then place that in the error template, which may be something that we would want to help us fix our code.
-
-*Go to views/error.ejs*
-&&&&&&&&&&&&&&&&&&&&&&&&&
-*/
 
 app.use((err, req, res, next) => {
-    // const {statusCode = 500, message = "Something Went Wrong"} = err
     const {statusCode = 500} = err
     if (!err.message) err.message = "Something Went Wrong"
-    res.status(statusCode).render("error", {err}) // Changed from "send(message)" to "render("error", {err})"
 })
 
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
-
-// --- Code Transition: 05 to 06 ---
-
-/*
-Now that we have learned about setting up relationships between models in MongoDB and how to integrate those relationships in Express, we will now put this into action by creating "review" functionality to Yelp Camp.
-
-We first need to create a "review" schema and then create a "review" model. We will do this in a file separate from where our "campgrounds" model was created. This means that we should rename our "models.js" file to "campgrounds.js"
-
-*Go to models/review.js; rename "models.js" to "campgrounds.js"* 
-
-The reviews that are created will be associated with specific campgrounds. We will express the relationship between the campground and associated reviews by embedding the review ObjectIDs in each campground. This means that we need to add a "reviews" property in our campground schema.
-
-*Go to campgrounds.js*
-*/
