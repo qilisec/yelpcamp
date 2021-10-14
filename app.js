@@ -394,6 +394,22 @@ We will add the form on the campground page itself instead of navigating to a se
 After we have set up the "review" form in our "show" template, we need to add a route that triggers Mongoose to save the review.
 */
 
+
+
+// --- Code Transition: 06b to 06c ---
+
+/*
+Now that we have set up our POST route to create new reviews, we should add client-side and server-side validation to our review form. The client-side validation will be performed by bootstrap and the server-side validation will be performed by "Joi".
+
+In order to enable server-side validation for our reviews, we must add a "review schema" for Joi.
+
+*Go to views/campgrounds/show.ejs; go to schemas.js*
+
+Once we create our Joi review schema, we must "require" it and create an associated "middle-ware" that uses the Joi review schema in order to perform the validation "test" of the request. If the request sent is invalid, the middle-ware will throw a custom error but if the request is valid, the middle-ware will pass the request onto the next function.
+
+Finally, we attach the new review validation middle-ware only to the review POSt route so that the middleware will only intercept those POST requests made to create new reviews.
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -434,15 +450,27 @@ db.once("open", () => {
 */
 
 
-const { campgroundSchema } = require("./schemas") 
+const { campgroundSchema, reviewSchema } = require("./schemas.js") // Adding "review" schema for import
 
-
-const validateCampground = (req, res, next) => { // Our new "server-side validation" middle-ware
-    const {error} = campgroundSchema.validate(req.body) 
+const validateReview = (req, res, next) => { // Our new "server-side review validation" middle-ware
+    const {error} = reviewSchema.validate(req.body)
     if (error) {
+        console.log(error)
         const msg = error.details.map(el => el.message).join(",")
         throw new ExpressError(msg, 400)
     } else {
+        console.log("No Error with Joi")
+        next()
+    }
+}
+const validateCampground = (req, res, next) => { // Our new "server-side campground validation" middle-ware
+    const {error} = campgroundSchema.validate(req.body) 
+    if (error) {
+        console.log(error)
+        const msg = error.details.map(el => el.message).join(",")
+        throw new ExpressError(msg, 400)
+    } else {
+        console.log("No Error with Joi")
         next();
     }
 }
@@ -473,20 +501,20 @@ app.get("/campgrounds/new", (req, res) => {
 })
 
 app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) => {
-   const campgroundSchema = Joi.object({
-       campground: Joi.object({
-        title: Joi.string().required(),
-        location: Joi.string().required(),
-        price: Joi.number().required().min(0),
-        image: Joi.string(),
-        description: Joi.string()
-       }).required()
-    })
-    const {error} = campgroundSchema.validate(req.body) 
-    if (error) {
-        const msg = error.details.map(el => el.message).join(",")
-        throw new ExpressError(msg, 400)
-    }
+//    const campgroundSchema = Joi.object({
+//        campground: Joi.object({
+//         title: Joi.string().required(),
+//         location: Joi.string().required(),
+//         price: Joi.number().required().min(0),
+//         image: Joi.string(),
+//         description: Joi.string()
+//        }).required()
+//     })
+    // const {error} = campgroundSchema.validate(req.body) 
+    // if (error) {
+    //     const msg = error.details.map(el => el.message).join(",")
+    //     throw new ExpressError(msg, 400)
+    // }
     const newCamp = new Campground(req.body.campground);
     await newCamp.save()
     res.redirect("/campgrounds")
@@ -526,7 +554,8 @@ Upon submitting the review on the "show" page of the campground, Mongoose should
 &&&&&&&&&&&&&&&&&&&&&&&&&
 */
 
-app.post("/campgrounds/:id/reviews", catchAsync(async (req, res) => {
+app.post("/campgrounds/:id/reviews", validateReview, catchAsync(async (req, res) => { 
+    // Add "Joi review middle-ware" to validate content of review before passing the request to the "main" function
     const reviewedCampground = await Campground.findById(req.params.id);
     const newReview = new Review(req.body.review);
     reviewedCampground.reviews.push(newReview);
@@ -544,6 +573,7 @@ app.all("*", (req, res, next) => {
 app.use((err, req, res, next) => {
     const {statusCode = 500} = err
     if (!err.message) err.message = "Something Went Wrong"
+    res.render("error", {err})
 })
 
 app.listen(3000, () => {
