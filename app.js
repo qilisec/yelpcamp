@@ -618,3 +618,13 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- Code Transition: 06f to 06g ---
+
+/*
+We will now introduce Mongoose middleware that will delete reviews associated with a campground when that specific campground is deleted. This serves to keep our database "clean".
+
+Middleware is introduced in Mongoose by adding code to our "models" files. Since we want our middleware to run when we delete our campgrounds, we will add the middleware code to our campgrounds model file.
+
+*Go to models/campgrounds.js*
+*/
