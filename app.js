@@ -421,6 +421,25 @@ To display the reviews associated with a campground on that campground's "show" 
 This "calling" and subsequent populating of the campground's reviews accounts upon navigation to that campground's "show" page. Thus, the code that instructs Mongoose to act will be placed in the GET route for a campground's "show" page.
 */
 
+
+// --- Code Transition: 06d to 06e ---
+
+/*
+Next, we will add styling to the submitted reviews.
+
+*Go to views/campgrounds/show.ejs*
+*/
+
+
+
+// --- Code Transition: 06e to 06f ---
+
+/*
+We will now add a route for review deletion along with a corresponding button (i.e. form) that will submit the DELETE request.
+
+The "app.delete" route will need to contain (as params) the review ID.
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -498,6 +517,14 @@ app.put("/campgrounds/:id", validateCampground, catchAsync(async (req, res) => {
     console.log(updateCamp)
     await updateCamp.save()
     res.redirect("/campgrounds")
+}))
+
+
+app.delete("/campgrounds/:id/reviews/:reviewId", catchAsync(async (req, res) => {
+    const {id, reviewId} = req.params;
+    const deleteReviewReference = await Campground.findByIdAndUpdate(id, {$pull: {reviews: reviewId}})
+    const deleteIdentifiedReview = await Review.findByIdAndDelete(reviewId)
+    res.redirect(`/campgrounds/${id}`)
 }))
 
 app.delete("/campgrounds/:id", catchAsync(async (req, res) => {
@@ -591,11 +618,3 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
-
-// --- Code Transition: 06d to 06e ---
-
-/*
-Next, we will add styling to the submitted reviews.
-
-*Go to views/campgrounds/show.ejs*
-*/
