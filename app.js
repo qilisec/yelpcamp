@@ -407,7 +407,18 @@ In order to enable server-side validation for our reviews, we must add a "review
 
 Once we create our Joi review schema, we must "require" it and create an associated "middle-ware" that uses the Joi review schema in order to perform the validation "test" of the request. If the request sent is invalid, the middle-ware will throw a custom error but if the request is valid, the middle-ware will pass the request onto the next function.
 
-Finally, we attach the new review validation middle-ware only to the review POSt route so that the middleware will only intercept those POST requests made to create new reviews.
+Finally, we attach the new review validation middle-ware only to the review POST route so that the middleware will only intercept those POST requests made to create new reviews.
+*/
+
+
+// --- Code Transition: 06c to 06d ---
+
+/*
+After filling out the functionality of the review submission process, our next step is to display the reviews that have been submitted.
+
+To display the reviews associated with a campground on that campground's "show" page, we need to call for the ObjectIDs of all the reviews in that campground's "review" property and then populate them. This will generate the actual "content" of the review.
+
+This "calling" and subsequent populating of the campground's reviews accounts upon navigation to that campground's "show" page. Thus, the code that instructs Mongoose to act will be placed in the GET route for a campground's "show" page.
 */
 
 /*
@@ -522,10 +533,11 @@ app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) =
 )
 
 app.get("/campgrounds/:id", catchAsync(async (req, res) => {
-    const identifiedCamp = await Campground.findById(req.params.id)
+    const identifiedCamp = await Campground.findById(req.params.id).populate("reviews")
     // console.log(req.params.id) // req.params.id is a string
     console.log("Show Details")
     console.log(req.params)
+    console.log(identifiedCamp.reviews)
     res.render("campgrounds/show", {identifiedCamp})
 }))
 
