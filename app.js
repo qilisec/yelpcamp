@@ -477,6 +477,22 @@ We will want to include "assets" to our web app so that we can "serve" users wit
 In order to do so, we need to create a directory "public" where all the assets and scripts that we want to serve our users will be found. We will then also have to use "app.use" in order to designate that directory as the one that Express should consider being the "repository" of those static assets. In fact, we can create separate subdirectories for javascript script files and stylesheets in order to better organize our edits. However, if we do so, we must use the "path.join" method as with our EJS templates in order to ensure that the system can properly navigate the public directory.
 */
 
+
+
+/*
+Some things that we can put into our "public" directory is our Bootstrap validation script that currently resides in our boilerplate layout header.
+
+*Go to /public/javascripts/validateForms.js*
+*/
+
+// --- Code Transition: 07b to 07c ---
+
+/*
+We will now incorporate the past lesson on sessions into our Yelp Camp application.
+
+We first need to download Express-Sessions using "npm i express-session". We will then "require" it. The last step in our basic set up will be setting up our "session options"
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -486,6 +502,7 @@ const app = express();
 const ejsMate = require("ejs-mate")
 const Joi = require("joi") // "Requiring" Joi
 const methodOverride = require("method-override")
+const session = require("express-session") // Requiring "express-session"
 
 const catchAsync = require("./utils/catchAsync.js")
 const ExpressError = require("./utils/ExpressError.js")
@@ -522,6 +539,20 @@ db.once("open", () => {
 ***&&& EXPRESS ROUTES &&&***
 */
 
+const sessionConfig = { // Setting up our configuration for express-session
+    secret: "secret",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // Expires "1 week" from the date cookie was "received"
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        httpOnly: true // Provides security from "XSS" insecurities
+    }
+}
+
+app.use(session(sessionConfig)) // Initializing Express-Session to "serve" session cookies to users upon navigating to any page on our web app. 
+
+
 app.use(express.static(path.join(__dirname, "Public")))
 
 app.use("/campgrounds", campgroundRoutes)
@@ -548,9 +579,3 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
-
-/*
-Some things that we can put into our "public" directory is our Bootstrap validation script that currently resides in our boilerplate layout header.
-
-*Go to /public/javascripts/validateForms.js*
-*/
