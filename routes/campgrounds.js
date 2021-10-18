@@ -94,7 +94,8 @@ router.get("/:id", catchAsync(async (req, res) => {
     console.log("Show Details")
     console.log(req.params)
     console.log(identifiedCamp.reviews)
-    res.render("campgrounds/show", {identifiedCamp, msg: req.flash("success")}) // We now pass the req.flash("success") to the show template (with the id of "msg"). We can then edit the show template to specify where on the page we would like the Flash message to be displayed
+    // res.render("campgrounds/show", {identifiedCamp, msg: req.flash("success")}) // No longer needed
+    res.render("campgrounds/show", {identifiedCamp})
 }))
 
 router.get("/", catchAsync(async (req, res) => {

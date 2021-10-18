@@ -509,6 +509,25 @@ Once we have initialized Flash and created a Flash message for a chosen route, w
 *Go to /views/campgrounds/show.ejs*
 */
 
+
+
+/*
+We can also create a middleware which will circumvent an otherwise necessary insertion of the 
+*/
+
+// --- Code Transition: 07d to 07e ---
+
+/*
+Since creating Flash messages and then having the "hook" those messages onto every route on which we would like those messages to appear is tedious, we can facilitate the process by creating an Express middleware that will cause the req.flash("success") message to be assigned to a "res.locals.success" local variable. This means that every route has "access" to this variable; We don't have to explicitly pass it into our rendered templates in order to uses them in those templates. Therefore, we can just go into any template and specify where we would like the Flash message to appear and it will work, even though we don't explicitly "pass" the message through.
+
+We can therefore remove the need to pass "msg: req.flash("success")" into our "router.render" for our "Show Campground" route in "routes/campgrounds.js"
+
+*Go to /routes/campgrounds.js*
+
+Note that since we are creating the middleware in "app.js", we will now need to initialize Flash in "app.js". Also note that depending on what we named the "variable" that we passed through to the "Show Campground" page using "router.render", we might have to edit our "show" page in order to correspond with what we chose as the "variable" name for "res.locals". For example, when we placed req.flash("Success") directly into the router.render of the "Show Campground" page, we used "msg" as the variable name. However, when using the middleware, we have assigned "req.flash("Success")" to "res.locals.success". That is, we went from "msg" to "success". We will need to change the "name" in our Show template.
+*/
+
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -553,11 +572,6 @@ db.once("open", () => {
     console.log("Database connected");
 });
 
-/*
-***&&& EXPRESS ROUTES &&&***
-*/
-// app.use(flash()) // Initializing "Flash". Actually not required on this file since we do not actually create any Flash messages here.
-
 const sessionConfig = { // Setting up our configuration for express-session
     secret: "secret",
     resave: false,
@@ -569,7 +583,18 @@ const sessionConfig = { // Setting up our configuration for express-session
     }
 }
 
+/*
+***&&& EXPRESS ROUTES &&&***
+*/
 app.use(session(sessionConfig)) // Initializing Express-Session to "serve" session cookies to users upon navigating to any page on our web app. 
+
+
+app.use(flash()) // Unlike before, where we assigned the flash message to be passed to the rendered template directly in the route which was located in routes/campgrounds.js, since we are now setting up an Express middleware that uses Flash in "app.js" itself, we will now need to have "app.use(flash)" set.
+
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    next();
+}) 
 
 
 app.use(express.static(path.join(__dirname, "Public")))
@@ -598,7 +623,3 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
-
-/*
-We can also create a middleware which will circumvent an otherwise necessary insertion of the 
-*/
