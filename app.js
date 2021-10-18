@@ -440,6 +440,33 @@ We will now add a route for review deletion along with a corresponding button (i
 The "app.delete" route will need to contain (as params) the review ID.
 */
 
+
+
+// --- Code Transition: 06f to 06g ---
+
+/*
+We will now introduce Mongoose middleware that will delete reviews associated with a campground when that specific campground is deleted. This serves to keep our database "clean".
+
+Middleware is introduced in Mongoose by adding code to our "models" files. Since we want our middleware to run when we delete our campgrounds, we will add the middleware code to our campgrounds model file.
+
+*Go to models/campgrounds.js*
+*/
+
+
+// --- Code Transition: 06 to 07 ---
+
+/*
+Now that we have learned about the Express router, we can reorganize and "clean up" the routes in our "app.js" file by creating new router files for our campground routes and review routes. We will place those files in a new "routes" folder. We will then transfer the associated routes from app.js into those new route files along with any associated functions or middleware.
+
+*Go to routes/campgrounds.js*
+
+Once we have moved all appropriate routes to the campground router, we need to require that router in "app.js" as well as invoke "app.use" to inform Express when this specific router should be active.
+
+Once we have verified that the campground router works, we can use the same process for the "reviews" routes. We will have all our review Routes be automatically "affixed" with "/campgrounds/:id/reviews" using "app.use". One thing we need to be cognizant of is that when we are "obtaining" params from the "app.use" affix, those params are not accessible in our reviews.js router by default. In order for our routes in reviews.js to have "access" to those params captured by app.js, we need to add a "mergeParams" setting to our express.router method.
+
+*Go to routes/reviews.js*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -453,6 +480,8 @@ const ExpressError = require("./utils/ExpressError.js")
 const Campground = require("./models/campgrounds.js")
 const Review = require("./models/review.js") // "Requiring" the new "reviews" model
 const methodOverride = require("method-override")
+const campgroundRoutes = require("./routes/campgrounds.js") // "Requiring" the new "router" for the Campground routes
+const reviewRoutes = require("./routes/reviews.js") // "Requiring" the new "router" for the review routes
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
@@ -480,128 +509,14 @@ db.once("open", () => {
 */
 
 
-const { campgroundSchema, reviewSchema } = require("./schemas.js") // Adding "review" schema for import
+app.use("/campgrounds", campgroundRoutes)
 
-const validateReview = (req, res, next) => { // Our new "server-side review validation" middle-ware
-    const {error} = reviewSchema.validate(req.body)
-    if (error) {
-        console.log(error)
-        const msg = error.details.map(el => el.message).join(",")
-        throw new ExpressError(msg, 400)
-    } else {
-        console.log("No Error with Joi")
-        next()
-    }
-}
-const validateCampground = (req, res, next) => { // Our new "server-side campground validation" middle-ware
-    const {error} = campgroundSchema.validate(req.body) 
-    if (error) {
-        console.log(error)
-        const msg = error.details.map(el => el.message).join(",")
-        throw new ExpressError(msg, 400)
-    } else {
-        console.log("No Error with Joi")
-        next();
-    }
-}
-
-app.get("/campgrounds/:id/edit", catchAsync(async (req, res) => {
-    const identifiedCamp = await Campground.findById(req.params.id)
-    res.render("campgrounds/edit", {identifiedCamp})
-}))
-
-app.put("/campgrounds/:id", validateCampground, catchAsync(async (req, res) => {
-    const {id} = await req.params
-    const updateCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground}, {new: true})
-    console.log(id)
-    console.log(updateCamp)
-    await updateCamp.save()
-    res.redirect("/campgrounds")
-}))
-
-
-app.delete("/campgrounds/:id/reviews/:reviewId", catchAsync(async (req, res) => {
-    const {id, reviewId} = req.params;
-    const deleteReviewReference = await Campground.findByIdAndUpdate(id, {$pull: {reviews: reviewId}})
-    const deleteIdentifiedReview = await Review.findByIdAndDelete(reviewId)
-    res.redirect(`/campgrounds/${id}`)
-}))
-
-app.delete("/campgrounds/:id", catchAsync(async (req, res) => {
-    const identifiedCamp = await Campground.findByIdAndDelete(req.params.id)
-    res.redirect("/campgrounds") 
-    // Careless Mistake: "res.redirect("/campgrounds"), not "res.redirect(campgrounds). This caused a "CastError".
-}))
-
-app.get("/campgrounds/new", (req, res) => {
-    console.log("New Campground")
-    res.render("campgrounds/new")
-})
-
-app.post("/campgrounds", validateCampground, catchAsync(async (req, res, next) => {
-//    const campgroundSchema = Joi.object({
-//        campground: Joi.object({
-//         title: Joi.string().required(),
-//         location: Joi.string().required(),
-//         price: Joi.number().required().min(0),
-//         image: Joi.string(),
-//         description: Joi.string()
-//        }).required()
-//     })
-    // const {error} = campgroundSchema.validate(req.body) 
-    // if (error) {
-    //     const msg = error.details.map(el => el.message).join(",")
-    //     throw new ExpressError(msg, 400)
-    // }
-    const newCamp = new Campground(req.body.campground);
-    await newCamp.save()
-    res.redirect("/campgrounds")
-    })
-)
-
-app.get("/campgrounds/:id", catchAsync(async (req, res) => {
-    const identifiedCamp = await Campground.findById(req.params.id).populate("reviews")
-    // console.log(req.params.id) // req.params.id is a string
-    console.log("Show Details")
-    console.log(req.params)
-    console.log(identifiedCamp.reviews)
-    res.render("campgrounds/show", {identifiedCamp})
-}))
-
-app.get("/campgrounds", catchAsync(async (req, res) => {
-    console.log("Index")
-    const campgroundIndex = await Campground.find({})
-    res.render("campgrounds/index", {campgroundIndex})
-}))
-// For some reason, if I start on "/campgrounds/" and not "/campgrounds", when I click a campground, I get directed to "/campgrounds/campgrounds/..id"
+app.use("/campgrounds/:id/reviews", reviewRoutes)
 
 app.get("/", (req, res) => {
     console.log("test")
     res.render("test")
 })
-
-/*
-&&&&&&&&&&&&&&&&&&&&&&&&&
-Our "route" to submit reviews should be an "extension" of our route to navigate to the "show" page of the campground that the review is for.
-
-Upon submitting the review on the "show" page of the campground, Mongoose should:
-1. Find the campground using the req.param.id
-2. Create a new review using the new "review" model
-3. "Push" the new review onto the "reviews" property of the campground
-4. Save the new review
-5. Save the "updated" campground
-&&&&&&&&&&&&&&&&&&&&&&&&&
-*/
-
-app.post("/campgrounds/:id/reviews", validateReview, catchAsync(async (req, res) => { 
-    // Add "Joi review middle-ware" to validate content of review before passing the request to the "main" function
-    const reviewedCampground = await Campground.findById(req.params.id);
-    const newReview = new Review(req.body.review);
-    reviewedCampground.reviews.push(newReview);
-    await newReview.save();
-    await reviewedCampground.save();
-    res.redirect(`/campgrounds/${reviewedCampground._id}`)
-}))
 
 
 app.all("*", (req, res, next) => {
@@ -618,13 +533,3 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
-
-// --- Code Transition: 06f to 06g ---
-
-/*
-We will now introduce Mongoose middleware that will delete reviews associated with a campground when that specific campground is deleted. This serves to keep our database "clean".
-
-Middleware is introduced in Mongoose by adding code to our "models" files. Since we want our middleware to run when we delete our campgrounds, we will add the middleware code to our campgrounds model file.
-
-*Go to models/campgrounds.js*
-*/
