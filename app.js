@@ -493,6 +493,22 @@ We will now incorporate the past lesson on sessions into our Yelp Camp applicati
 We first need to download Express-Sessions using "npm i express-session". We will then "require" it. The last step in our basic set up will be setting up our "session options"
 */
 
+
+
+// --- Code Transition: 07c to 07d ---
+
+/*
+Part of the reason why we wanted to introduce Express-Session was so that we could use "Flash" messages. These would be nice to show to users upon creating new campgrounds/reviews and similar processes.
+
+We will need to install Flash using "npm i connect-flash" followed by "requiring" it "invoking" it using "app.use". We can then create specific Flash messages for any routes we wish to have a Flash message be displayed. Note that we since we are using Flash to create messages for specific routes, we will actually need to "require" Flash in those specific router files. In that case, we would then use "router.use" instead of "app.use" in order to initialize Flash. 
+
+*Go to /routes/campgrounds.js*
+
+Once we have initialized Flash and created a Flash message for a chosen route, we then need to assign it a "key/label" and have it be passed to the "res.render" page where we would like for the message to appear. Finally, we have to edit the template for that page so that we can specify where on the page the message should appear
+
+*Go to /views/campgrounds/show.ejs*
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -503,6 +519,8 @@ const ejsMate = require("ejs-mate")
 const Joi = require("joi") // "Requiring" Joi
 const methodOverride = require("method-override")
 const session = require("express-session") // Requiring "express-session"
+const flash = require("connect-flash") // Requiring "Flash"
+
 
 const catchAsync = require("./utils/catchAsync.js")
 const ExpressError = require("./utils/ExpressError.js")
@@ -538,6 +556,7 @@ db.once("open", () => {
 /*
 ***&&& EXPRESS ROUTES &&&***
 */
+// app.use(flash()) // Initializing "Flash". Actually not required on this file since we do not actually create any Flash messages here.
 
 const sessionConfig = { // Setting up our configuration for express-session
     secret: "secret",
@@ -579,3 +598,7 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+/*
+We can also create a middleware which will circumvent an otherwise necessary insertion of the 
+*/
