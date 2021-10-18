@@ -467,6 +467,16 @@ Once we have verified that the campground router works, we can use the same proc
 *Go to routes/reviews.js*
 */
 
+
+
+// --- Code Transition: 07a to 07b ---
+
+/*
+We will want to include "assets" to our web app so that we can "serve" users with static assets and "scripts" whenever users interact with our web app in specific ways.
+
+In order to do so, we need to create a directory "public" where all the assets and scripts that we want to serve our users will be found. We will then also have to use "app.use" in order to designate that directory as the one that Express should consider being the "repository" of those static assets. In fact, we can create separate subdirectories for javascript script files and stylesheets in order to better organize our edits. However, if we do so, we must use the "path.join" method as with our EJS templates in order to ensure that the system can properly navigate the public directory.
+*/
+
 /*
 ***&&& MODULE SETUP &&&***
 */
@@ -475,11 +485,12 @@ const path = require("path")
 const app = express();
 const ejsMate = require("ejs-mate")
 const Joi = require("joi") // "Requiring" Joi
+const methodOverride = require("method-override")
+
 const catchAsync = require("./utils/catchAsync.js")
 const ExpressError = require("./utils/ExpressError.js")
 const Campground = require("./models/campgrounds.js")
 const Review = require("./models/review.js") // "Requiring" the new "reviews" model
-const methodOverride = require("method-override")
 const campgroundRoutes = require("./routes/campgrounds.js") // "Requiring" the new "router" for the Campground routes
 const reviewRoutes = require("./routes/reviews.js") // "Requiring" the new "router" for the review routes
 
@@ -487,8 +498,10 @@ app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 
 app.engine("ejs", ejsMate)
+
 app.use(express.urlencoded({extended:true}))
 app.use(methodOverride("_method")) 
+
 
 const mongoose = require("mongoose")
 
@@ -496,6 +509,7 @@ mongoose.connect("mongodb://localhost:27017/yelp-camp", {
     useNewUrlParser: true,
     // useCreateIndex: true, // When I enable this option, mongoose does not work.
     useUnifiedTopology: true
+    // useFindAndModify: false
 })
 
 const db = mongoose.connection;
@@ -508,6 +522,7 @@ db.once("open", () => {
 ***&&& EXPRESS ROUTES &&&***
 */
 
+app.use(express.static(path.join(__dirname, "Public")))
 
 app.use("/campgrounds", campgroundRoutes)
 
@@ -533,3 +548,9 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+/*
+Some things that we can put into our "public" directory is our Bootstrap validation script that currently resides in our boilerplate layout header.
+
+*Go to /public/javascripts/validateForms.js*
+*/
