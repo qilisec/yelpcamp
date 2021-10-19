@@ -10,7 +10,7 @@ Lastly, we need to check to see if any instances where we designate paths (e.g. 
 
 const express = require("express")
 const app = express();
-const router = express.Router()
+const router = express.Router({mergeParams: true})
 const path = require("path")
 const ejsMate = require("ejs-mate")
 const catchAsync = require("../utils/catchAsync.js")
@@ -45,11 +45,11 @@ const { campgroundSchema } = require("../schemas.js")
 const validateCampground = (req, res, next) => {
     const {error} = campgroundSchema.validate(req.body) 
     if (error) {
-        console.log(error)
+        // console.log(error)
         const msg = error.details.map(el => el.message).join(",")
         throw new ExpressError(msg, 400)
     } else {
-        console.log("No Error with Joi")
+        // console.log("No Error with Joi")
         next();
     }
 }
@@ -64,21 +64,22 @@ router.get("/:id/edit", catchAsync(async (req, res) => {
 router.put("/:id", validateCampground, catchAsync(async (req, res) => {
     const {id} = await req.params
     const updateCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground}, {new: true})
-    console.log(id)
-    console.log(updateCamp)
+    // console.log(id)
+    // console.log(updateCamp)
     await updateCamp.save()
-    req.flash("success", "Successfully updated Campground!")
+    req.flash("success", "Successfully updated campground!") // Adding "Success" Flash message trigger to our "Edit Campground" route
     res.redirect("/campgrounds")
 }))
 
 
 router.delete("/:id", catchAsync(async (req, res) => {
     const identifiedCamp = await Campground.findByIdAndDelete(req.params.id)
+    req.flash("success", "Successfully deleted campground") // Adding "Success" Flash message trigger to our "Delete Campground" route
     res.redirect("/campgrounds")
 }))
 
 router.get("/new", (req, res) => {
-    console.log("New Campground")
+    // console.log("New Campground")
     res.render("campgrounds/new")
 })
 
@@ -92,15 +93,19 @@ router.post("/", validateCampground, catchAsync(async (req, res, next) => {
 
 router.get("/:id", catchAsync(async (req, res) => {
     const identifiedCamp = await Campground.findById(req.params.id).populate("reviews")
-    console.log("Show Details")
-    console.log(req.params)
-    console.log(identifiedCamp.reviews)
+    // console.log("Show Details")
+    // console.log(req.params)
+    // console.log(identifiedCamp.reviews)
     // res.render("campgrounds/show", {identifiedCamp, msg: req.flash("success")}) // No longer needed
+    if (!identifiedCamp) {
+        req.flash("error", "Cannot find that campground!")
+        return res.redirect("/campgrounds")
+    }
     res.render("campgrounds/show", {identifiedCamp})
 }))
 
 router.get("/", catchAsync(async (req, res) => {
-    console.log("Index")
+    // console.log("Index")
     const campgroundIndex = await Campground.find({})
     res.render("campgrounds/index", {campgroundIndex})
 }))

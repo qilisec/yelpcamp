@@ -36,11 +36,11 @@ const { reviewSchema } = require("../schemas.js")
 const validateReview = (req, res, next) => {
     const {error} = reviewSchema.validate(req.body)
     if (error) {
-        console.log(error)
+        // console.log(error)
         const msg = error.details.map(el => el.message).join(",")
         throw new ExpressError(msg, 400)
     } else {
-        console.log("No Error with Joi")
+        // console.log("No Error with Joi")
         next()
     }
 }
@@ -51,13 +51,15 @@ router.post("/", validateReview, catchAsync(async (req, res) => {
     reviewedCampground.reviews.push(newReview);
     await newReview.save();
     await reviewedCampground.save();
+    req.flash("success", "Created new review") // Added "Success" Flash message to "New Review" route
     res.redirect(`/campgrounds/${reviewedCampground._id}`)
 }))
 
 router.delete("/:reviewId", catchAsync(async (req, res) => {
-    const {id, reviewId} = req.params;
+    const { id, reviewId } = req.params;
     const deleteReviewReference = await Campground.findByIdAndUpdate(id, {$pull: {reviews: reviewId}})
     const deleteIdentifiedReview = await Review.findByIdAndDelete(reviewId)
+    req.flash("success", "Successfully deleted review") // Added "Success" Flash message to "Delete Review" route
     res.redirect(`/campgrounds/${id}`)
 }))
 

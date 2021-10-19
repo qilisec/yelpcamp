@@ -593,6 +593,7 @@ app.use(flash()) // Unlike before, where we assigned the flash message to be pas
 
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error")
     next();
 }) 
 
@@ -635,8 +636,27 @@ We will use Bootstrap to provide styling for the Flash Message. Specifically, we
 
 Once we have our "Flash" partial set up, we will then "import" it in our boilerplate layout, positioning it above our "body" content.
 
-In addition, we can now begin adding our Flash "triggers" to routes other than our "New Campgrounds" route. We can also add such a trigger to our "Edit" route. This will be quite easy as both the "New Campground" and "Edit Campground" routes render the same "show" page.
+In addition, we can now begin adding our Flash "triggers" to routes other than our "New Campgrounds" route. We can also add such a trigger to our "Edit Campground" route. Similarly, we can also add this Flash message to our "Delete Campground" route.
 
-Note that while the Flash message on our "New Campground" and "Edit Campground" is the same in terms of its "ID" (i.e. "success" from "req.flash("Success", "...")"), we can actually vary the "message" within that "req.flash" between routes (e.g. "req.flash("Success", "New campground successfully created")" for the "New Campground" route and "req.flash("Success", "Campground successfully updated")" for the "Edit Campground" route.)
+Note that, while the Flash message on our "New Campground" and "Edit Campground" is the same in terms of its "ID" (i.e. "success" from "req.flash("Success", "...")"), we can actually vary the "message" within that "req.flash" between routes (e.g. "req.flash("Success", "New campground successfully created")" for the "New Campground" route and "req.flash("Success", "Campground successfully updated")" for the "Edit Campground" route.)
+
+We can also add this "Success" Flash message to our Review routes as well.
+
+*Go to /routes/reviews.js*
 */
 
+// --- Code Transition: 07f to 07g ---
+
+/*
+Now that we have finished setting up our "Success" Flash message styling and triggers, we can now begin to create other Flash messages. For example, we also need an "Error" Flash message.
+
+As with "Success", we can set up the styling of our "Error" Flash in our "flash" partial.
+
+*Go to /views/partials/flash.ejs*
+
+After we add our styling, our next objective is to add this "Error" Flash message to our routes. However, unlike with our "Success" Flash, deciding when to flash the "Error" message is more difficult. This is because we have already set up a page and styling for any error that is generated. It seems to be redundant to then, after navigating to the error page, to also flash an "error" message.
+
+Thus, we really should only use our "Error" flash message when we don't want the user to see that error page. That is, we should use our "Error" flash message for errors where our best course of action is to send the user away from his initial destination, accompanied with the "Error" Flash message. That is, we use it when we don't actually want the user to see that error message.
+
+*Go to /routes/campgrounds.js*
+*/
