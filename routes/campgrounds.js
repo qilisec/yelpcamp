@@ -67,6 +67,7 @@ router.put("/:id", validateCampground, catchAsync(async (req, res) => {
     console.log(id)
     console.log(updateCamp)
     await updateCamp.save()
+    req.flash("success", "Successfully updated Campground!")
     res.redirect("/campgrounds")
 }))
 

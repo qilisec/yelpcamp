@@ -520,7 +520,7 @@ We can also create a middleware which will circumvent an otherwise necessary ins
 /*
 Since creating Flash messages and then having the "hook" those messages onto every route on which we would like those messages to appear is tedious, we can facilitate the process by creating an Express middleware that will cause the req.flash("success") message to be assigned to a "res.locals.success" local variable. This means that every route has "access" to this variable; We don't have to explicitly pass it into our rendered templates in order to uses them in those templates. Therefore, we can just go into any template and specify where we would like the Flash message to appear and it will work, even though we don't explicitly "pass" the message through.
 
-We can therefore remove the need to pass "msg: req.flash("success")" into our "router.render" for our "Show Campground" route in "routes/campgrounds.js"
+We can therefore remove the need to pass "msg: req.flash("success")" into our "router.render" for our "Show Campground" route in "routes/campgrounds.js". However, we will still have to specify which routes we want to act as the "triggers" for the Flash message
 
 *Go to /routes/campgrounds.js*
 
@@ -623,3 +623,20 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
     console.log("serving on port 3000")
 })
+
+// --- Code Transition: 07e to 07f ---
+
+/*
+Now that we've set up our Express middleware to help "pass" our "New Campground" Flash message onto our template pages, we can now add some styling to it. In addition, we can partition it as a template partial. This will allow us to easily "export" the styling for our Flash message to all our templates.
+
+We will use Bootstrap to provide styling for the Flash Message. Specifically, we will "contain" our Flash message within a Bootstrap div with a class of "alert" and also attach a button to this div that will be responsible for hiding the message when the user interacts with it.
+
+*Go to /views/partials/flash.ejs*
+
+Once we have our "Flash" partial set up, we will then "import" it in our boilerplate layout, positioning it above our "body" content.
+
+In addition, we can now begin adding our Flash "triggers" to routes other than our "New Campgrounds" route. We can also add such a trigger to our "Edit" route. This will be quite easy as both the "New Campground" and "Edit Campground" routes render the same "show" page.
+
+Note that while the Flash message on our "New Campground" and "Edit Campground" is the same in terms of its "ID" (i.e. "success" from "req.flash("Success", "...")"), we can actually vary the "message" within that "req.flash" between routes (e.g. "req.flash("Success", "New campground successfully created")" for the "New Campground" route and "req.flash("Success", "Campground successfully updated")" for the "Edit Campground" route.)
+*/
+
